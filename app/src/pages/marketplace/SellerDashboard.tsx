@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CalimeroApp } from '@calimero-network/calimero-client';
+import { useCalimero } from '@calimero-network/calimero-client';
 import { AbiClient } from '../../api/AbiClient';
 
 interface Product {
@@ -18,6 +18,7 @@ interface Product {
 
 export default function SellerDashboard() {
   const navigate = useNavigate();
+  const { app } = useCalimero();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddProduct, setShowAddProduct] = useState(false);
@@ -39,13 +40,16 @@ export default function SellerDashboard() {
   const MARKETPLACE_CONTEXT_ID = 'AYZCubjAactLnudYYUC2xCzkoD14eCZPw6PThxRJuGVM';
 
   useEffect(() => {
-    loadProducts();
-  }, []);
+    if (app) {
+      loadProducts();
+    } else {
+      setLoading(false);
+    }
+  }, [app]);
 
   const loadProducts = async () => {
     try {
       setLoading(true);
-      const app = (window as any).calimeroApp as CalimeroApp;
       if (!app) return;
 
       const contexts = await app.fetchContexts();
@@ -74,10 +78,17 @@ export default function SellerDashboard() {
     e.preventDefault();
 
     try {
-      const app = (window as any).calimeroApp as CalimeroApp;
+      if (!app) {
+        alert('Please connect your wallet first to add products.');
+        return;
+      }
+
       const contexts = await app.fetchContexts();
       const marketplaceContext = contexts.find(c => c.id === MARKETPLACE_CONTEXT_ID);
-      if (!marketplaceContext) return;
+      if (!marketplaceContext) {
+        alert('Marketplace context not found. Please ensure the network is bootstrapped correctly.');
+        return;
+      }
 
       const api = new AbiClient(app, marketplaceContext);
 
@@ -114,6 +125,29 @@ export default function SellerDashboard() {
 
   if (loading) {
     return <div style={{ padding: '40px', textAlign: 'center' }}><h2>Loading...</h2></div>;
+  }
+
+  if (!app) {
+    return (
+      <div style={{ padding: '40px', textAlign: 'center' }}>
+        <h2>🔒 Authentication Required</h2>
+        <p style={{ color: '#666', marginTop: '16px' }}>Please connect your wallet to access the Seller Dashboard.</p>
+        <button
+          onClick={() => navigate('/')}
+          style={{
+            marginTop: '20px',
+            padding: '10px 20px',
+            backgroundColor: '#4f46e5',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer',
+          }}
+        >
+          Go to Home
+        </button>
+      </div>
+    );
   }
 
   return (

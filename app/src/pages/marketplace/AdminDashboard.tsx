@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCalimeroContext, CalimeroApp } from '@calimero-network/calimero-client';
+import { useCalimero } from '@calimero-network/calimero-client';
 import { AbiClient } from '../../api/AbiClient';
 
 interface MarketplaceRequest {
@@ -24,6 +24,7 @@ interface MarketplaceInfo {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const { app } = useCalimero();
   const [pendingRequests, setPendingRequests] = useState<MarketplaceRequest[]>([]);
   const [allMarketplaces, setAllMarketplaces] = useState<MarketplaceInfo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,15 +35,17 @@ export default function AdminDashboard() {
   const CONTEXT_MANAGER_ID = '6gVrzgJgUiNgLEvXRYLRzsJQxKraaDBkYAydGvDJ2j3v';
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (app) {
+      loadData();
+    } else {
+      setLoading(false);
+    }
+  }, [app]);
 
   const loadData = async () => {
     try {
       setLoading(true);
 
-      // Get the CalimeroApp instance
-      const app = (window as any).calimeroApp as CalimeroApp;
       if (!app) {
         console.error('CalimeroApp not initialized');
         return;
@@ -82,11 +85,18 @@ export default function AdminDashboard() {
 
   const approveMarketplace = async (requestId: string) => {
     try {
-      const app = (window as any).calimeroApp as CalimeroApp;
+      if (!app) {
+        alert('Please connect your wallet first.');
+        return;
+      }
+
       const contexts = await app.fetchContexts();
       const managerContext = contexts.find(c => c.id === CONTEXT_MANAGER_ID);
 
-      if (!managerContext) return;
+      if (!managerContext) {
+        alert('Context Manager context not found. Please ensure the network is bootstrapped correctly.');
+        return;
+      }
 
       const api = new AbiClient(app, managerContext);
 
@@ -114,6 +124,29 @@ export default function AdminDashboard() {
     return (
       <div style={{ padding: '40px', textAlign: 'center' }}>
         <h2>Loading...</h2>
+      </div>
+    );
+  }
+
+  if (!app) {
+    return (
+      <div style={{ padding: '40px', textAlign: 'center' }}>
+        <h2>🔒 Authentication Required</h2>
+        <p style={{ color: '#666', marginTop: '16px' }}>Please connect your wallet to access the Admin Dashboard.</p>
+        <button
+          onClick={() => navigate('/marketplace')}
+          style={{
+            marginTop: '20px',
+            padding: '10px 20px',
+            backgroundColor: '#4f46e5',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer',
+          }}
+        >
+          Go to Home
+        </button>
       </div>
     );
   }
