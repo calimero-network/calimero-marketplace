@@ -37,36 +37,40 @@ export default function SellerDashboard() {
 
   // TODO: Update this ID after running `pnpm network:bootstrap`
   // Look for "marketplace_context_id" in the bootstrap output
-  const MARKETPLACE_CONTEXT_ID = 'AYZCubjAactLnudYYUC2xCzkoD14eCZPw6PThxRJuGVM';
+  const MARKETPLACE_CONTEXT_ID = 'A2gohzYWwdgguTs4frBMpctuMTY7gwTDFG5BtZ1UN28L';
 
   useEffect(() => {
-    if (app) {
-      loadProducts();
-    } else {
-      setLoading(false);
-    }
-  }, [app]);
+    // Load products on mount (no auth required for demo)
+    loadProducts();
+  }, []);
 
   const loadProducts = async () => {
     try {
       setLoading(true);
-      if (!app) return;
 
-      const contexts = await app.fetchContexts();
-      const marketplaceContext = contexts.find(c => c.id === MARKETPLACE_CONTEXT_ID);
-      if (!marketplaceContext) return;
-
-      const api = new AbiClient(app, marketplaceContext);
-      const productsJson = await api.getProducts();
-      const prods: Product[] = Object.values(JSON.parse(productsJson));
-
-      // Filter products by seller wallet
-      const myProducts = prods.filter(p => {
-        // Find seller by wallet to get seller_id
-        return true; // For demo, show all products
+      // Direct API call without authentication (for demo)
+      const response = await fetch('http://localhost:2528/jsonrpc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: '1',
+          method: 'execute',
+          params: {
+            contextId: MARKETPLACE_CONTEXT_ID,
+            method: 'get_products',
+            argsJson: {},
+            executorPublicKey: 'J4r3jAQRPm8xc4TAV4hDVCd1UAvDekGMa9MKrcUg8KDs'
+          }
+        })
       });
 
-      setProducts(myProducts);
+      const data = await response.json();
+      if (data.result?.output) {
+        const productsJson = data.result.output;
+        const prods: Product[] = Object.values(JSON.parse(productsJson));
+        setProducts(prods); // Show all products for demo
+      }
     } catch (error) {
       console.error('Error loading products:', error);
     } finally {
@@ -125,29 +129,6 @@ export default function SellerDashboard() {
 
   if (loading) {
     return <div style={{ padding: '40px', textAlign: 'center' }}><h2>Loading...</h2></div>;
-  }
-
-  if (!app) {
-    return (
-      <div style={{ padding: '40px', textAlign: 'center' }}>
-        <h2>🔒 Authentication Required</h2>
-        <p style={{ color: '#666', marginTop: '16px' }}>Please connect your wallet to access the Seller Dashboard.</p>
-        <button
-          onClick={() => navigate('/')}
-          style={{
-            marginTop: '20px',
-            padding: '10px 20px',
-            backgroundColor: '#4f46e5',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-          }}
-        >
-          Go to Home
-        </button>
-      </div>
-    );
   }
 
   return (

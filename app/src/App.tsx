@@ -9,10 +9,11 @@ import AdminDashboard from './pages/marketplace/AdminDashboard';
 import OwnerDashboard from './pages/marketplace/OwnerDashboard';
 import SellerDashboard from './pages/marketplace/SellerDashboard';
 import BuyerMarketplace from './pages/marketplace/BuyerMarketplace';
+import TestInventory from './pages/marketplace/TestInventory';
 
 export default function App() {
   const [clientAppId] = useState<string>(
-    '3ENGFBV9bHrwpxMMPFXraRnL7bgp9gfKC7vHwcBBunBP',
+    'BNL3n4b5oxe4X94SgNCFFNPgHxQVMRzdzRb2Dj2XvqgV',
   );
 
   return (
@@ -30,6 +31,7 @@ export default function App() {
             <Route path="/owner" element={<OwnerDashboard />} />
             <Route path="/seller" element={<SellerDashboard />} />
             <Route path="/buyer" element={<BuyerMarketplace />} />
+            <Route path="/test" element={<TestInventory />} />
           </Routes>
         </BrowserRouter>
       </ToastProvider>

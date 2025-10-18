@@ -58,7 +58,7 @@ export default function OwnerDashboard() {
 
   // TODO: Update this ID after running `pnpm network:bootstrap`
   // Look for "marketplace_context_id" in the bootstrap output
-  const MARKETPLACE_CONTEXT_ID = 'AYZCubjAactLnudYYUC2xCzkoD14eCZPw6PThxRJuGVM';
+  const MARKETPLACE_CONTEXT_ID = 'A2gohzYWwdgguTs4frBMpctuMTY7gwTDFG5BtZ1UN28L';
 
   useEffect(() => {
     if (app) {

@@ -27,7 +27,7 @@ export default function Authenticate() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/home');
+      navigate('/marketplace');
     }
   }, [isAuthenticated, navigate]);
 

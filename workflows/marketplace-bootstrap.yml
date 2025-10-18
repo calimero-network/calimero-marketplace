@@ -72,7 +72,7 @@ steps:
       type_of_goods: "Electronics & Accessories"
       signature: "0xSignature_marketplace_request"
     outputs:
-      request_id_obj: result
+      request_result: result
 
   - name: Wait for Marketplace Request
     type: wait
@@ -120,7 +120,7 @@ steps:
       request_id: "req_1"
       context_id: "{{marketplace_context_id}}"
     outputs:
-      marketplace_id: output
+      marketplace_id: result
 
   - name: Wait for Marketplace Approval
     type: wait
