@@ -83,3 +83,10 @@ out/
 .cache/
 temp/
 tmp/
+
+# Calimero Network
+# Local node data (contexts, blockchain state, etc.)
+data/
+
+# Bootstrap temporary logs
+/tmp/bootstrap*.log

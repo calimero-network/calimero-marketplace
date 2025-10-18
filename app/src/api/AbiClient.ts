@@ -116,10 +116,34 @@ export class AbiClient {
   /**
    * init
    */
-  public async init(params: { mode: string; param1: string; param2: string }): Promise<void> {
-    const response = await this.app.execute(this.context, 'init', params);
+  public async init(): Promise<void> {
+    const response = await this.app.execute(this.context, 'init', {});
     if (response.success) {
       return response.result as void;
+    } else {
+      throw new Error(response.error || 'Execution failed');
+    }
+  }
+
+  /**
+   * init_manager
+   */
+  public async initManager(params: { admin_address: string }): Promise<string> {
+    const response = await this.app.execute(this.context, 'init_manager', params);
+    if (response.success) {
+      return response.result as string;
+    } else {
+      throw new Error(response.error || 'Execution failed');
+    }
+  }
+
+  /**
+   * init_marketplace
+   */
+  public async initMarketplace(params: { marketplace_id: string; owner_wallet: string }): Promise<string> {
+    const response = await this.app.execute(this.context, 'init_marketplace', params);
+    if (response.success) {
+      return response.result as string;
     } else {
       throw new Error(response.error || 'Execution failed');
     }

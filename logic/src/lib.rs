@@ -185,50 +185,42 @@ impl MarketplaceApp {
     // ========================================================================
 
     #[app::init]
-    pub fn init(mode: String, param1: String, param2: String) -> MarketplaceApp {
-        // mode = "manager" or "marketplace"
-        // For manager: param1 = admin_address, param2 = ignored
-        // For marketplace: param1 = marketplace_id, param2 = owner_wallet
-
-        if mode == "manager" {
-            app::log!("Initializing ContextManager with admin: {}", param1);
-            MarketplaceApp {
-                mode: AppMode::ContextManager,
-                admin_address: Some(param1),
-                marketplace_requests: UnorderedMap::new(),
-                marketplaces: UnorderedMap::new(),
-                request_counter: 0,
-                marketplace_counter: 0,
-                marketplace_id: None,
-                owner_wallet: None,
-                seller_requests: UnorderedMap::new(),
-                sellers: UnorderedMap::new(),
-                products: UnorderedMap::new(),
-                orders: UnorderedMap::new(),
-                seller_counter: 0,
-                product_counter: 0,
-                order_counter: 0,
-            }
-        } else {
-            app::log!("Initializing Marketplace {} for owner {}", param1, param2);
-            MarketplaceApp {
-                mode: AppMode::Marketplace,
-                admin_address: None,
-                marketplace_requests: UnorderedMap::new(),
-                marketplaces: UnorderedMap::new(),
-                request_counter: 0,
-                marketplace_counter: 0,
-                marketplace_id: Some(param1),
-                owner_wallet: Some(param2),
-                seller_requests: UnorderedMap::new(),
-                sellers: UnorderedMap::new(),
-                products: UnorderedMap::new(),
-                orders: UnorderedMap::new(),
-                seller_counter: 0,
-                product_counter: 0,
-                order_counter: 0,
-            }
+    pub fn init() -> MarketplaceApp {
+        app::log!("Creating uninitialized MarketplaceApp - must call init_manager or init_marketplace");
+        MarketplaceApp {
+            mode: AppMode::ContextManager, // default mode, will be set properly during init
+            admin_address: None,
+            marketplace_requests: UnorderedMap::new(),
+            marketplaces: UnorderedMap::new(),
+            request_counter: 0,
+            marketplace_counter: 0,
+            marketplace_id: None,
+            owner_wallet: None,
+            seller_requests: UnorderedMap::new(),
+            sellers: UnorderedMap::new(),
+            products: UnorderedMap::new(),
+            orders: UnorderedMap::new(),
+            seller_counter: 0,
+            product_counter: 0,
+            order_counter: 0,
         }
+    }
+
+    /// Initialize as Context Manager
+    pub fn init_manager(&mut self, admin_address: String) -> app::Result<String> {
+        app::log!("Initializing ContextManager with admin: {}", admin_address);
+        self.mode = AppMode::ContextManager;
+        self.admin_address = Some(admin_address.clone());
+        Ok(format!("Initialized as ContextManager with admin: {}", admin_address))
+    }
+
+    /// Initialize as Marketplace
+    pub fn init_marketplace(&mut self, marketplace_id: String, owner_wallet: String) -> app::Result<String> {
+        app::log!("Initializing Marketplace {} for owner {}", marketplace_id, owner_wallet);
+        self.mode = AppMode::Marketplace;
+        self.marketplace_id = Some(marketplace_id.clone());
+        self.owner_wallet = Some(owner_wallet.clone());
+        Ok(format!("Initialized as Marketplace {} for owner {}", marketplace_id, owner_wallet))
     }
 
     pub fn get_mode(&self) -> app::Result<String> {

@@ -4,28 +4,43 @@
   "methods": [
     {
       "name": "init",
+      "params": [],
+      "returns": {
+        "kind": "unit"
+      }
+    },
+    {
+      "name": "init_manager",
       "params": [
         {
-          "name": "mode",
-          "type": {
-            "kind": "string"
-          }
-        },
-        {
-          "name": "param1",
-          "type": {
-            "kind": "string"
-          }
-        },
-        {
-          "name": "param2",
+          "name": "admin_address",
           "type": {
             "kind": "string"
           }
         }
       ],
       "returns": {
-        "kind": "unit"
+        "kind": "string"
+      }
+    },
+    {
+      "name": "init_marketplace",
+      "params": [
+        {
+          "name": "marketplace_id",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "owner_wallet",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "returns": {
+        "kind": "string"
       }
     },
     {

@@ -81,7 +81,37 @@ Generates TypeScript client from ABI into `app/src/api/AbiClient.ts`.
 pnpm network:bootstrap
 ```
 
-Runs the Merobox workflow to create local Calimero nodes and contexts.
+**Why do we need this?**
+The bootstrap workflow sets up your complete local development environment in one command. Instead of manually creating contexts and adding test data through the UI, this automated workflow gives you a fully working marketplace with demo data, ready to test immediately. Every time you rebuild the WASM (after changing Rust code), you'll re-run this to restart the nodes with your latest changes.
+
+**What it does:**
+- Starts 2 Calimero nodes (node-1 and node-2)
+- Installs the marketplace application
+- Creates Context Manager and Demo Marketplace contexts
+- Populates with demo data (admin, sellers, products, orders)
+
+**⚠️ IMPORTANT: Update Context IDs after bootstrap**
+
+The bootstrap creates new contexts with unique IDs each time. You need to update these IDs in the frontend code:
+
+1. **Look for the IDs in bootstrap output:**
+   ```
+   manager_context_id: <CONTEXT_ID_1>
+   marketplace_context_id: <CONTEXT_ID_2>
+   ```
+
+2. **Update these 4 files:**
+   - `app/src/pages/marketplace/AdminDashboard.tsx` - Replace `CONTEXT_MANAGER_ID`
+   - `app/src/pages/marketplace/OwnerDashboard.tsx` - Replace `MARKETPLACE_CONTEXT_ID`
+   - `app/src/pages/marketplace/SellerDashboard.tsx` - Replace `MARKETPLACE_CONTEXT_ID`
+   - `app/src/pages/marketplace/BuyerMarketplace.tsx` - Replace `MARKETPLACE_CONTEXT_ID`
+
+3. **Demo Data Created:**
+   - Admin: `0xAdminWallet123456789`
+   - Owner: `0xOwnerWalletABC` (TechGadgets Store)
+   - Approved Seller: `0xSellerWallet001` (TechSupplies Inc) with 3 products
+   - Pending Seller: `0xSellerWallet002` (SmartHome Solutions)
+   - Buyer: `0xBuyerWallet001` with 1 order
 
 ### 5. Run Frontend
 
