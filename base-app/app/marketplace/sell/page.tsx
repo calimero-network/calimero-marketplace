@@ -1,7 +1,8 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMiniKit } from '@coinbase/onchainkit/minikit';
+import Image from 'next/image';
 
 interface Product {
   id: string;
@@ -18,7 +19,7 @@ interface Product {
 
 export default function SellProducts() {
   const router = useRouter();
-  const { context } = useMiniKit();
+  const { context: _context } = useMiniKit();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -47,11 +48,7 @@ export default function SellProducts() {
     'Other'
   ];
 
-  useEffect(() => {
-    loadProducts();
-  }, []);
-
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -83,7 +80,11 @@ export default function SellProducts() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [MARKETPLACE_CONTEXT_ID]);
+
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,7 +92,7 @@ export default function SellProducts() {
 
     try {
       // TODO: Implement actual product creation with Calimero network
-      const newProduct = {
+      const _newProduct = {
         id: `product_${Date.now()}`,
         seller_id: 'current_user',
         name: formData.name,
@@ -331,9 +332,11 @@ export default function SellProducts() {
                 <div key={product.id} className="border border-gray-200 rounded-lg overflow-hidden">
                   <div className="aspect-square bg-gray-100 flex items-center justify-center">
                     {product.image_url ? (
-                      <img
+                      <Image
                         src={product.image_url}
                         alt={product.name}
+                        width={300}
+                        height={300}
                         className="w-full h-full object-cover"
                       />
                     ) : (

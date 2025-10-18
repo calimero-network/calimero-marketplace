@@ -1,7 +1,8 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMiniKit } from '@coinbase/onchainkit/minikit';
+import Image from 'next/image';
 
 interface Product {
   id: string;
@@ -17,26 +18,31 @@ interface Product {
 }
 
 interface ProductDetailProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function ProductDetail({ params }: ProductDetailProps) {
   const router = useRouter();
-  const { context } = useMiniKit();
+  const { context: _context } = useMiniKit();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
+  const [productId, setProductId] = useState<string>('');
 
   // TODO: Update this ID after running `pnpm network:bootstrap`
   const MARKETPLACE_CONTEXT_ID = process.env.NEXT_PUBLIC_MARKETPLACE_CONTEXT_ID || 'QsUM9fLnnDcHR7eA28mnpMZXaZvAbYtzqje8opb3QcQ';
 
   useEffect(() => {
-    loadProduct();
-  }, [params.id]);
+    const getParams = async () => {
+      const resolvedParams = await params;
+      setProductId(resolvedParams.id);
+    };
+    getParams();
+  }, [params]);
 
-  const loadProduct = async () => {
+  const loadProduct = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -60,7 +66,7 @@ export default function ProductDetail({ params }: ProductDetailProps) {
       if (data.result?.output) {
         const productsJson = data.result.output;
         const products: Product[] = Object.values(JSON.parse(productsJson));
-        const foundProduct = products.find(p => p.id === params.id);
+        const foundProduct = products.find(p => p.id === productId);
         setProduct(foundProduct || null);
       }
     } catch (error) {
@@ -68,7 +74,13 @@ export default function ProductDetail({ params }: ProductDetailProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [productId, MARKETPLACE_CONTEXT_ID]);
+
+  useEffect(() => {
+    if (productId) {
+      loadProduct();
+    }
+  }, [productId, loadProduct]);
 
   const handlePurchase = async () => {
     if (!product) return;
@@ -103,7 +115,7 @@ export default function ProductDetail({ params }: ProductDetailProps) {
         <div className="text-center">
           <div className="text-6xl mb-4">❌</div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Product not found</h3>
-          <p className="text-gray-600 mb-4">This product may have been removed or doesn't exist.</p>
+          <p className="text-gray-600 mb-4">This product may have been removed or doesn&apos;t exist.</p>
           <button
             onClick={() => router.push('/marketplace/browse')}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -141,9 +153,11 @@ export default function ProductDetail({ params }: ProductDetailProps) {
           {/* Product Image */}
           <div className="aspect-video bg-gray-100 flex items-center justify-center">
             {product.image_url ? (
-              <img
+              <Image
                 src={product.image_url}
                 alt={product.name}
+                width={800}
+                height={600}
                 className="w-full h-full object-cover"
               />
             ) : (

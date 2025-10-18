@@ -1,7 +1,8 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMiniKit } from '@coinbase/onchainkit/minikit';
+import Image from 'next/image';
 
 interface Product {
   id: string;
@@ -18,7 +19,7 @@ interface Product {
 
 export default function BrowseProducts() {
   const router = useRouter();
-  const { context } = useMiniKit();
+  const { context: _context } = useMiniKit();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -38,11 +39,7 @@ export default function BrowseProducts() {
     { value: 'Other', label: 'Other' },
   ];
 
-  useEffect(() => {
-    loadProducts();
-  }, []);
-
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -73,7 +70,11 @@ export default function BrowseProducts() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [MARKETPLACE_CONTEXT_ID]);
+
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
 
   const filteredProducts = products
     .filter(product => product.quantity > 0)
@@ -204,9 +205,11 @@ export default function BrowseProducts() {
               {/* Product Image - Wallapop style */}
               <div className="aspect-square bg-gray-100 relative">
                 {product.image_url ? (
-                  <img
+                  <Image
                     src={product.image_url}
                     alt={product.name}
+                    width={300}
+                    height={300}
                     className="w-full h-full object-cover"
                   />
                 ) : (

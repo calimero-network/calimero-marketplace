@@ -1,7 +1,8 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMiniKit } from '@coinbase/onchainkit/minikit';
+import Image from 'next/image';
 
 interface Order {
   id: string;
@@ -30,7 +31,7 @@ interface Product {
 
 export default function MyOrders() {
   const router = useRouter();
-  const { context } = useMiniKit();
+  const { context: _context } = useMiniKit();
   const [orders, setOrders] = useState<Order[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,11 +41,7 @@ export default function MyOrders() {
   const MARKETPLACE_CONTEXT_ID = process.env.NEXT_PUBLIC_MARKETPLACE_CONTEXT_ID || 'QsUM9fLnnDcHR7eA28mnpMZXaZvAbYtzqje8opb3QcQ';
   const BUYER_WALLET = '0xBuyerWallet001'; // Demo wallet
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -99,12 +96,19 @@ export default function MyOrders() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [MARKETPLACE_CONTEXT_ID, BUYER_WALLET]);
 
-  const getEscrowStatus = (status: any): string => {
-    if (status.Pending !== undefined) return 'Pending';
-    if (status.Released !== undefined) return 'Released';
-    if (status.Refunded !== undefined) return 'Refunded';
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const getEscrowStatus = (status: unknown): string => {
+    if (typeof status === 'object' && status !== null) {
+      const statusObj = status as Record<string, unknown>;
+      if (statusObj.Pending !== undefined) return 'Pending';
+      if (statusObj.Released !== undefined) return 'Released';
+      if (statusObj.Refunded !== undefined) return 'Refunded';
+    }
     return 'Unknown';
   };
 
@@ -272,9 +276,11 @@ export default function MyOrders() {
                     <div className="flex items-center space-x-4">
                       <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
                         {product?.image_url ? (
-                          <img
+                          <Image
                             src={product.image_url}
                             alt={product.name}
+                            width={64}
+                            height={64}
                             className="w-full h-full object-cover rounded-lg"
                           />
                         ) : (

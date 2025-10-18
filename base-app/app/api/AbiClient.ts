@@ -53,7 +53,7 @@ export class CalimeroBytes {
 /**
  * Convert CalimeroBytes instances to arrays for WASM compatibility
  */
-function convertCalimeroBytesForWasm(obj: any): any {
+function _convertCalimeroBytesForWasm(obj: unknown): unknown {
   if (obj === null || obj === undefined) {
     return obj;
   }
@@ -63,13 +63,13 @@ function convertCalimeroBytesForWasm(obj: any): any {
   }
 
   if (Array.isArray(obj)) {
-    return obj.map(item => convertCalimeroBytesForWasm(item));
+    return obj.map(item => _convertCalimeroBytesForWasm(item));
   }
 
   if (typeof obj === "object") {
-    const result: any = {};
+    const result: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(obj)) {
-      result[key] = convertCalimeroBytesForWasm(value);
+      result[key] = _convertCalimeroBytesForWasm(value);
     }
     return result;
   }
@@ -80,7 +80,7 @@ function convertCalimeroBytesForWasm(obj: any): any {
 /**
  * Convert arrays back to CalimeroBytes instances from WASM responses
  */
-function convertWasmResultToCalimeroBytes(obj: any): any {
+function _convertWasmResultToCalimeroBytes(obj: unknown): unknown {
   if (obj === null || obj === undefined) {
     return obj;
   }
@@ -90,13 +90,13 @@ function convertWasmResultToCalimeroBytes(obj: any): any {
   }
 
   if (Array.isArray(obj)) {
-    return obj.map(item => convertWasmResultToCalimeroBytes(item));
+    return obj.map(item => _convertWasmResultToCalimeroBytes(item));
   }
 
   if (typeof obj === "object") {
-    const result: any = {};
+    const result: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(obj)) {
-      result[key] = convertWasmResultToCalimeroBytes(value);
+      result[key] = _convertWasmResultToCalimeroBytes(value);
     }
     return result;
   }
