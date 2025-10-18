@@ -194,7 +194,7 @@ export default function WelcomePage() {
               Authentication Successful!
             </h2>
             <p style={{ color: '#6b7280', margin: '0 0 32px', lineHeight: '1.5' }}>
-              You're now connected to the marketplace
+              You&apos;re now connected to the marketplace
             </p>
 
             <div style={{
