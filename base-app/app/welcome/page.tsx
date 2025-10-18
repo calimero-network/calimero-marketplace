@@ -1,155 +1,73 @@
 'use client';
 
+import { useAuthenticate } from '@coinbase/onchainkit/minikit';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function WelcomePage() {
-  const [isLoading, setIsLoading] = useState(false);
+  const { signIn } = useAuthenticate();
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userFid, setUserFid] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
   const router = useRouter();
 
-
-  // Check authentication status on mount
+  // Check if user is already authenticated and redirect
   useEffect(() => {
-    // Clear any existing mock tokens for clean testing
-    localStorage.removeItem('calimero-auth');
-    localStorage.removeItem('jwtToken');
-    
-    const storedAuth = localStorage.getItem('calimero-auth');
-    if (storedAuth) {
-      try {
-        const authData = JSON.parse(storedAuth);
-        if (authData.address && authData.timestamp) {
-          // Check if auth is not expired (24 hours)
-          const isExpired = Date.now() - authData.timestamp > 24 * 60 * 60 * 1000;
-          if (!isExpired) {
-            setIsAuthenticated(true);
-            setUserFid(authData.address); // Use address as FID for now
-            
-            // Auto-redirect already authenticated users
-            setTimeout(() => {
-              router.push('/marketplace');
-            }, 2000);
-          } else {
-            localStorage.removeItem('calimero-auth');
-          }
-        }
-      } catch (error) {
-        console.error('Error parsing stored auth:', error);
-        localStorage.removeItem('calimero-auth');
-      }
-    }
-  }, [router]);
-
-  const signInWithFarcaster = async () => {
-    console.log('signInWithFarcaster called - starting real Farcaster authentication');
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      console.log('Checking if running in Farcaster context...');
-      
-      // Check if we're running in a Farcaster context
-      if (typeof window === 'undefined') {
-        throw new Error('This must run in a browser environment');
-      }
-
-      // Check for Farcaster context
-      if (!window.parent || window.parent === window) {
-        throw new Error('This app must be running within Farcaster to use authentication. Please open this app from within the Farcaster mobile app.');
-      }
-
-      console.log('Attempting to load Farcaster SDK...');
-      
-      // Dynamic import to avoid SSR issues
-      const { sdk } = await import('@farcaster/miniapp-sdk');
-      console.log('Farcaster SDK loaded successfully');
-      
-      // Check if SDK is properly initialized
-      if (!sdk || !sdk.quickAuth) {
-        throw new Error('Farcaster SDK not properly initialized');
-      }
-      
-      console.log('Calling sdk.quickAuth.getToken()...');
-      
-      // Get JWT token from Farcaster
-      const result = await sdk.quickAuth.getToken();
-      console.log('getToken result:', result);
-      
-      if (!result || !result.token) {
-        throw new Error('No token received from Farcaster');
-      }
-      
-      const { token } = result;
-      console.log('JWT token received:', token.substring(0, 20) + '...');
-      console.log('🔑 FULL JWT TOKEN FOR SERVER VERIFICATION:', token);
-      
-      // Verify token with backend
-      console.log('Verifying token with backend...');
-      const response = await fetch('/api/auth', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Authentication failed');
-      }
-
-      const userData = await response.json();
-      console.log('Backend verification successful:', userData);
-      
+    if (user) {
       // Store authentication data in the same format as AuthContext
-      const fid = userData.user.fid.toString();
       const authData = {
-        address: fid, // Use FID as address for now
+        address: user.fid.toString(),
         timestamp: Date.now()
       };
       localStorage.setItem('calimero-auth', JSON.stringify(authData));
-      localStorage.setItem('jwtToken', token);
       
-      setIsAuthenticated(true);
-      setUserFid(fid);
-
-      // Redirect to marketplace
+      // Redirect to marketplace after a short delay
       setTimeout(() => {
         router.push('/marketplace');
       }, 1000);
+    }
+  }, [user, router]);
+
+  const handleAuth = async () => {
+    setIsAuthenticating(true);
+    setError(null);
+    
+    try {
+      const result = await signIn();
+      console.log('🔑 SIGNIN RESULT:', result);
       
-    } catch (err: unknown) {
-      console.error('Farcaster authentication error:', err);
-      console.error('Error details:', {
-        name: err instanceof Error ? err.name : 'Unknown',
-        message: err instanceof Error ? err.message : 'Unknown error',
-        stack: err instanceof Error ? err.stack : 'No stack trace'
-      });
-      
-      // Provide more helpful error messages
-      let errorMessage = 'Authentication failed. Please try again.';
-      
-      if (err instanceof Error) {
-        if (err.message.includes('Farcaster context')) {
-          errorMessage = 'This app must be opened from within the Farcaster mobile app to use authentication.';
-        } else if (err.message.includes('SDK not properly initialized')) {
-          errorMessage = 'Farcaster SDK failed to initialize. Please try refreshing the page.';
-        } else {
-          errorMessage = err.message;
-        }
+      if (result) {
+        // Extract user data from result
+        const userData = result as any;
+        const fid = userData.fid || userData.user?.fid || 'unknown';
+        
+        console.log('Authenticated user FID:', fid);
+        console.log('🔑 USER DATA FOR SERVER VERIFICATION:', userData);
+        
+        setUser(userData);
+        
+        // Store authentication data
+        const authData = {
+          address: fid.toString(),
+          timestamp: Date.now()
+        };
+        localStorage.setItem('calimero-auth', JSON.stringify(authData));
+        
+        // Redirect to marketplace
+        setTimeout(() => {
+          router.push('/marketplace');
+        }, 1000);
       }
-      
-      setError(errorMessage);
+    } catch (error) {
+      console.error('Authentication failed:', error);
+      setError(error instanceof Error ? error.message : 'Authentication failed. Please try again.');
     } finally {
-      setIsLoading(false);
+      setIsAuthenticating(false);
     }
   };
 
   // Show authenticated state
-  if (isAuthenticated) {
+  if (user) {
     return (
       <div style={{ 
         minHeight: '100vh', 
@@ -213,7 +131,7 @@ export default function WelcomePage() {
                 wordBreak: 'break-all',
                 margin: 0 
               }}>
-                {userFid}
+                {user.fid || user.user?.fid || 'Unknown'}
               </p>
             </div>
 
@@ -309,26 +227,26 @@ export default function WelcomePage() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <button
-              onClick={signInWithFarcaster}
-              disabled={isLoading}
+              onClick={handleAuth}
+              disabled={isAuthenticating}
               style={{
                 width: '100%',
-                backgroundColor: isLoading ? '#93c5fd' : '#2563eb',
+                backgroundColor: isAuthenticating ? '#93c5fd' : '#2563eb',
                 color: 'white',
                 padding: '16px 24px',
                 borderRadius: '16px',
                 border: 'none',
                 fontSize: '16px',
                 fontWeight: '500',
-                cursor: isLoading ? 'not-allowed' : 'pointer',
+                cursor: isAuthenticating ? 'not-allowed' : 'pointer',
                 transition: 'background-color 0.2s'
               }}
             >
-              {isLoading ? 'Connecting...' : 'Connect with Farcaster'}
+              {isAuthenticating ? 'Authenticating...' : 'Sign In with Farcaster'}
             </button>
 
 
-            {isLoading && (
+            {isAuthenticating && (
               <div style={{ textAlign: 'center' }}>
                 <div style={{
                   display: 'inline-flex',
