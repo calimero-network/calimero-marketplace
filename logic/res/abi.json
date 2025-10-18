@@ -1,0 +1,343 @@
+{
+  "schema_version": "wasm-abi/1",
+  "types": {},
+  "methods": [
+    {
+      "name": "init",
+      "params": [
+        {
+          "name": "mode",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "param1",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "param2",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "returns": {
+        "kind": "unit"
+      }
+    },
+    {
+      "name": "get_mode",
+      "params": [],
+      "returns": {
+        "kind": "string"
+      }
+    },
+    {
+      "name": "request_marketplace",
+      "params": [
+        {
+          "name": "owner_wallet",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "store_name",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "type_of_goods",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "signature",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "returns": {
+        "kind": "string"
+      }
+    },
+    {
+      "name": "admin_approve_marketplace",
+      "params": [
+        {
+          "name": "request_id",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "context_id",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "returns": {
+        "kind": "string"
+      }
+    },
+    {
+      "name": "get_all_marketplaces",
+      "params": [],
+      "returns": {
+        "kind": "string"
+      }
+    },
+    {
+      "name": "get_pending_requests",
+      "params": [],
+      "returns": {
+        "kind": "string"
+      }
+    },
+    {
+      "name": "get_admin_address",
+      "params": [],
+      "returns": {
+        "kind": "string"
+      }
+    },
+    {
+      "name": "request_seller_access",
+      "params": [
+        {
+          "name": "wallet_address",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "company_name",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "company_details",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "signature",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "returns": {
+        "kind": "string"
+      }
+    },
+    {
+      "name": "owner_approve_seller",
+      "params": [
+        {
+          "name": "seller_id",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "returns": {
+        "kind": "unit"
+      }
+    },
+    {
+      "name": "add_product",
+      "params": [
+        {
+          "name": "seller_wallet",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "name",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "description",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "quantity",
+          "type": {
+            "kind": "u32"
+          }
+        },
+        {
+          "name": "price",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "image_url",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "category",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "shipping_info",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "_signature",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "returns": {
+        "kind": "string"
+      }
+    },
+    {
+      "name": "purchase_product",
+      "params": [
+        {
+          "name": "product_id",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "buyer_wallet",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "amount",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "_signature",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "returns": {
+        "kind": "string"
+      }
+    },
+    {
+      "name": "get_delivery_payload",
+      "params": [
+        {
+          "name": "order_id",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "returns": {
+        "kind": "string"
+      }
+    },
+    {
+      "name": "confirm_delivery",
+      "params": [
+        {
+          "name": "order_id",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "_buyer_signature",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "returns": {
+        "kind": "unit"
+      }
+    },
+    {
+      "name": "get_products",
+      "params": [],
+      "returns": {
+        "kind": "string"
+      }
+    },
+    {
+      "name": "get_sellers",
+      "params": [],
+      "returns": {
+        "kind": "string"
+      }
+    },
+    {
+      "name": "get_pending_seller_requests",
+      "params": [],
+      "returns": {
+        "kind": "string"
+      }
+    },
+    {
+      "name": "get_orders",
+      "params": [],
+      "returns": {
+        "kind": "string"
+      }
+    },
+    {
+      "name": "get_order",
+      "params": [
+        {
+          "name": "order_id",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "returns": {
+        "kind": "string"
+      }
+    },
+    {
+      "name": "get_owner_wallet",
+      "params": [],
+      "returns": {
+        "kind": "string"
+      }
+    },
+    {
+      "name": "get_marketplace_id",
+      "params": [],
+      "returns": {
+        "kind": "string"
+      }
+    }
+  ],
+  "events": []
+}
