@@ -1,0 +1,45 @@
+{
+  "home": {
+    "welcome": "Welcome to the Calimero Marketplace Demo!",
+    "demoDescription": "A powerful decentralized marketplace built on Calimero's P2P network. Buy, sell, and manage products with real-time synchronization across the network.",
+    "calimeroIntro": "Calimero is a privacy-focused blockchain network that enables developers to build scalable, private applications. Our platform provides the infrastructure for creating decentralized applications with enhanced privacy and performance.",
+    "learnMore": "Learn more about Calimero:",
+    "documentation": "Documentation",
+    "github": "GitHub",
+    "website": "Website",
+    "addEntry": "Add new entry",
+    "key": "Key",
+    "value": "Value",
+    "noEntries": "No entries",
+    "setEntry": "Set Entry",
+    "resetEntries": "Reset Entries",
+    "contextActions": "Context Actions",
+    "logout": "Logout",
+    "errors": {
+      "setFailed": "Failed to set entry",
+      "loadFailed": "Failed to load entries",
+      "clearFailed": "Failed to clear entries",
+      "removeFailed": "Failed to remove entry"
+    }
+  },
+  "auth": {
+    "title": "Marketplace",
+    "back": "Back",
+    "goToContext": "Go to context actions",
+    "description": {
+      "title": "Welcome to the Calimero Marketplace Demo",
+      "subtitle": "A decentralized multi-stakeholder marketplace",
+      "features": [
+        "Buy and sell products in a decentralized marketplace",
+        "Real-time order tracking and escrow management",
+        "Secure and distributed transaction processing",
+        "Easy-to-use interface for managing your marketplace"
+      ],
+      "getStarted": "Connect your wallet to get started"
+    }
+  },
+  "context": {
+    "backToLogin": "Back to Login",
+    "goToHome": "Go to Home"
+  }
+}
