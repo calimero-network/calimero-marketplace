@@ -1,39 +1,36 @@
 const ROOT_URL =
   process.env.NEXT_PUBLIC_URL ||
-  (process.env.VERCEL_URL && `https://${process.env.VERCEL_URL}`) ||
-  "http://localhost:3000";
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'http://localhost:3000');
 
 /**
- * MiniApp configuration object. Must follow the mini app manifest specification.
+ * MiniApp configuration object. Must follow the Farcaster MiniApp specification.
  *
- * @see {@link https://docs.base.org/mini-apps/features/manifest}
+ * @see {@link https://miniapps.farcaster.xyz/docs/guides/publishing}
  */
 export const minikitConfig = {
   accountAssociation: {
-    header: "eyJmaWQiOjEzOTEzMjAsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHg2ZjI2YTc0QjU4MjVjMkIyYjIyYTE2RWZCNzcwOTM2NWM1NTMzQjdEIn0",
-    payload: "eyJkb21haW4iOiJjYWxpbWVyby1tYXJrZXRwbGFjZS52ZXJjZWwuYXBwIn0",
-    signature: "MHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDIwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAyMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwYzAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMTIwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxNzAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDE5NTc5ZDZjMTBjMjZjYTVlY2Y5NzlhNzczNDFmZjJkMmU3ZjllMjQ0YjNhMmYyZTE3NDY0YmY4ZjU1YzhhZjQ0MGMxMDJhODFhMzFkYzc1ZWI5YzRjZTQ1ZmJiZDkzZmEwYzIzNTA1ZjdlM2YwMWI5Y2UxYzE4MzE5MDY5MzQyZTAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMjVmMTk4MDg2YjJkYjE3MjU2NzMxYmM0NTY2NzNiOTZiY2VmMjNmNTFkMWZiYWNkZDdjNDM3OWVmNjU0NjU1NzJmMWQwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwOGE3YjIyNzQ3OTcwNjUyMjNhMjI3NzY1NjI2MTc1NzQ2ODZlMmU2NzY1NzQyMjJjMjI2MzY4NjE2YzZjNjU2ZTY3NjUyMjNhMjI2ZTYyMzkzNjRhNDQ3MTM0NjkzMzMyNTc1ZjVhNDQ0Zjc2NjM3YTU2NDk1MjRhNGQzNzJkNzEzOTY5NDQ3OTMyNDM3NTZjNjQ1MjU0MmQ0YTRmNGM3MzIyMmMyMjZmNzI2OTY3Njk2ZTIyM2EyMjY4NzQ3NDcwNzMzYTJmMmY2YjY1Nzk3MzJlNjM2ZjY5NmU2MjYxNzM2NTJlNjM2ZjZkMjIyYzIyNjM3MjZmNzM3MzRmNzI2OTY3Njk2ZTIyM2E2NjYxNmM3MzY1N2QwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMA",
-  },
-  baseBuilder: {
-    allowedAddresses: [],
+    header: "",
+    payload: "",
+    signature: ""
   },
   miniapp: {
     version: "1",
-    name: "marketbase",
-    subtitle: "",
-    description: "",
-    screenshotUrls: [],
-    iconUrl: `${ROOT_URL}/icon.png`,
-    splashImageUrl: `${ROOT_URL}/splash.png`,
+    name: "Cubey", 
+    subtitle: "Your AI Ad Companion", 
+    description: "Ads",
+    screenshotUrls: [`${ROOT_URL}/screenshot-portrait.png`],
+    iconUrl: `${ROOT_URL}/blue-icon.png`,
+    splashImageUrl: `${ROOT_URL}/blue-hero.png`,
     splashBackgroundColor: "#000000",
     homeUrl: ROOT_URL,
     webhookUrl: `${ROOT_URL}/api/webhook`,
-    primaryCategory: "utility",
-    tags: ["example"],
-    heroImageUrl: `${ROOT_URL}/hero.png`,
+    primaryCategory: "social",
+    tags: ["marketing", "ads", "quickstart", "waitlist"],
+    heroImageUrl: `${ROOT_URL}/blue-hero.png`, 
     tagline: "",
     ogTitle: "",
     ogDescription: "",
-    ogImageUrl: `${ROOT_URL}/hero.png`,
+    ogImageUrl: `${ROOT_URL}/blue-hero.png`,
   },
 } as const;
+
