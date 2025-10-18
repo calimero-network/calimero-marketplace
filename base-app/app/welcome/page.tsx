@@ -8,15 +8,16 @@ export default function WelcomePage() {
   const { signIn } = useAuthenticate();
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ fid?: string; user?: { fid?: string } } | null>(null);
   const router = useRouter();
 
   // Check if user is already authenticated and redirect
   useEffect(() => {
     if (user) {
       // Store authentication data in the same format as AuthContext
+      const fid = user.fid || user.user?.fid || 'unknown';
       const authData = {
-        address: user.fid.toString(),
+        address: fid.toString(),
         timestamp: Date.now()
       };
       localStorage.setItem('calimero-auth', JSON.stringify(authData));
@@ -38,7 +39,7 @@ export default function WelcomePage() {
       
       if (result) {
         // Extract user data from result
-        const userData = result as any;
+        const userData = result as { fid?: string; user?: { fid?: string } };
         const fid = userData.fid || userData.user?.fid || 'unknown';
         
         console.log('Authenticated user FID:', fid);
