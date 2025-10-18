@@ -6,15 +6,15 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to marketplace on app load
-    router.push("/marketplace");
+    // Redirect to welcome page for authentication
+    router.push("/welcome");
   }, [router]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Loading marketplace...</p>
+        <p className="text-gray-600">Loading...</p>
       </div>
     </div>
   );
