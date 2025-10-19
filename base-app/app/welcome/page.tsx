@@ -167,6 +167,7 @@ export default function WelcomePage() {
                     wordBreak: 'break-all',
                     margin: 0 
                   }}>
+                    {user.toString()}
                     {user.fid || 'Unknown'}
                   </p>
             </div>
