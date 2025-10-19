@@ -19,7 +19,7 @@ export default function WelcomePage() {
   // Check if user is already authenticated and redirect
   useEffect(() => {
     if (user) {
-      console.log('✅ User authenticated:', user);
+      setDebugInfo(prev => prev + `\n✅ User authenticated in useEffect: ${JSON.stringify(user)}`);
       // Store authentication data in the same format as AuthContext
       const fid = user.fid || 'unknown';
       const authData = {
@@ -27,12 +27,10 @@ export default function WelcomePage() {
         timestamp: Date.now()
       };
       localStorage.setItem('calimero-auth', JSON.stringify(authData));
-      console.log('💾 Stored auth data:', authData);
+      setDebugInfo(prev => prev + `\n💾 Stored auth data: ${JSON.stringify(authData)}`);
       
-      // Redirect to marketplace after a short delay
-      setTimeout(() => {
-        router.push('/marketplace');
-      }, 1000);
+      // DON'T redirect - just show debug info
+      setDebugInfo(prev => prev + `\n🚫 Redirect disabled for debugging`);
     }
   }, [user, router]);
 
@@ -42,25 +40,33 @@ export default function WelcomePage() {
     setDebugInfo('🚀 Starting authentication...');
     
     try {
+      setDebugInfo(prev => prev + '\n📞 Calling signIn()...');
       const result = await signIn();
-      setDebugInfo(`🔑 SIGNIN RESULT TYPE: ${typeof result}`);
+      setDebugInfo(prev => prev + `\n🔑 SIGNIN RESULT TYPE: ${typeof result}`);
+      setDebugInfo(prev => prev + `\n🔑 SIGNIN RESULT: ${JSON.stringify(result, null, 2)}`);
       
       if (result) {
-        setDebugInfo(`✅ Authentication successful! Result keys: ${Object.keys(result).join(', ')}`);
+        setDebugInfo(prev => prev + `\n✅ Authentication successful!`);
+        setDebugInfo(prev => prev + `\n🔑 Result keys: ${Object.keys(result).join(', ')}`);
         
         // Try multiple possible FID extraction paths
         const userData = result as Record<string, unknown>;
+        setDebugInfo(prev => prev + `\n🔍 userData type: ${typeof userData}`);
+        setDebugInfo(prev => prev + `\n🔍 userData keys: ${Object.keys(userData).join(', ')}`);
         
-        // Check all possible FID locations
-        const fidChecks = [
-          `userData.fid: ${userData.fid}`,
-          `userData.user: ${userData.user}`,
-          `userData.data: ${userData.data}`,
-          `userData.profile: ${userData.profile}`,
-          `userData.authenticatedUser: ${userData.authenticatedUser}`
-        ];
+        // Check all possible FID locations step by step
+        setDebugInfo(prev => prev + `\n🔍 Checking userData.fid: ${userData.fid}`);
+        setDebugInfo(prev => prev + `\n🔍 Checking userData.user: ${JSON.stringify(userData.user)}`);
+        setDebugInfo(prev => prev + `\n🔍 Checking userData.data: ${JSON.stringify(userData.data)}`);
+        setDebugInfo(prev => prev + `\n🔍 Checking userData.profile: ${JSON.stringify(userData.profile)}`);
+        setDebugInfo(prev => prev + `\n🔍 Checking userData.authenticatedUser: ${JSON.stringify(userData.authenticatedUser)}`);
         
-        setDebugInfo(`🔍 FID Checks:\n${fidChecks.join('\n')}`);
+        // Check nested user object
+        if (userData.user) {
+          const userObj = userData.user as Record<string, unknown>;
+          setDebugInfo(prev => prev + `\n🔍 userData.user keys: ${Object.keys(userObj).join(', ')}`);
+          setDebugInfo(prev => prev + `\n🔍 userData.user.fid: ${userObj.fid}`);
+        }
         
         // Try all possible FID paths
         const fid = userData.fid || 
@@ -70,9 +76,10 @@ export default function WelcomePage() {
                    (userData.authenticatedUser as Record<string, unknown>)?.fid ||
                    'unknown';
         
-        setDebugInfo(`✅ Final FID: ${fid} (type: ${typeof fid})`);
+        setDebugInfo(prev => prev + `\n✅ Final FID: ${fid} (type: ${typeof fid})`);
         
         // Set the user state
+        setDebugInfo(prev => prev + `\n👤 Setting user state with fid: ${fid}`);
         setUser({ fid: fid.toString() });
         
         // Store authentication data
@@ -81,13 +88,14 @@ export default function WelcomePage() {
           timestamp: Date.now()
         };
         localStorage.setItem('calimero-auth', JSON.stringify(authData));
-        setDebugInfo(`💾 Stored auth data: ${JSON.stringify(authData)}`);
+        setDebugInfo(prev => prev + `\n💾 Stored auth data: ${JSON.stringify(authData)}`);
+        setDebugInfo(prev => prev + `\n🎯 Authentication complete - staying on page for debugging`);
       } else {
-        setDebugInfo('❌ No result from signIn()');
+        setDebugInfo(prev => prev + '\n❌ No result from signIn()');
         setError('No authentication result received');
       }
     } catch (error) {
-      setDebugInfo(`❌ Authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setDebugInfo(prev => prev + `\n❌ Authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setError(error instanceof Error ? error.message : 'Authentication failed. Please try again.');
     } finally {
       setIsAuthenticating(false);
@@ -256,22 +264,34 @@ export default function WelcomePage() {
               {debugInfo && (
                 <div style={{
                   marginBottom: '24px',
-                  padding: '16px',
+                  padding: '20px',
                   backgroundColor: '#f0f9ff',
-                  border: '1px solid #bae6fd',
-                  borderRadius: '16px'
+                  border: '2px solid #0284c7',
+                  borderRadius: '16px',
+                  maxHeight: '400px',
+                  overflowY: 'auto'
                 }}>
                   <div style={{ display: 'flex' }}>
                     <div style={{ flexShrink: 0 }}>
-                      <svg style={{ height: '20px', width: '20px', color: '#0284c7' }} viewBox="0 0 20 20" fill="currentColor">
+                      <svg style={{ height: '24px', width: '24px', color: '#0284c7' }} viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1H9a1 1 0 110-2h1V7a1 1 0 011-1z" clipRule="evenodd" />
                       </svg>
                     </div>
                     <div style={{ marginLeft: '12px', flex: 1 }}>
-                      <h3 style={{ fontSize: '14px', fontWeight: '500', color: '#1e40af', margin: '0 0 8px' }}>
-                        Debug Info
+                      <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1e40af', margin: '0 0 12px' }}>
+                        🔍 Complete Debug Log
                       </h3>
-                      <div style={{ fontSize: '12px', color: '#1e40af', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
+                      <div style={{ 
+                        fontSize: '13px', 
+                        color: '#1e40af', 
+                        fontFamily: 'monospace', 
+                        whiteSpace: 'pre-wrap',
+                        lineHeight: '1.4',
+                        backgroundColor: '#ffffff',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        border: '1px solid #bae6fd'
+                      }}>
                         {debugInfo}
                       </div>
                     </div>
