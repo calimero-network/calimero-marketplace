@@ -15,7 +15,7 @@ interface AuthResponse {
 }
 
 export default function WelcomePage() {
-  const { isFrameReady, setFrameReady, context } = useMiniKit();
+  const { isFrameReady, setFrameReady } = useMiniKit();
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 

@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running pre-push checks..."
+
+# Check if we're in the base-app directory
+if [ -f "package.json" ] && [ -f "next.config.ts" ]; then
+  echo "📦 Running linting and type checking..."
+  
+  # Run linting
+  npm run lint
+  
+  # Run type checking
+  npx tsc --noEmit
+  
+  # Run build to ensure everything compiles
+  npm run build
+  
+  echo "✅ All pre-push checks passed!"
+else
+  echo "⚠️  Not in base-app directory, skipping checks"
+fi
