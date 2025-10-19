@@ -5,11 +5,17 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function WelcomePage() {
-  const { signIn } = useAuthenticate();
+  const authenticateHook = useAuthenticate();
+  const { signIn } = authenticateHook;
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<{ fid?: string; user?: { fid?: string } } | null>(null);
   const router = useRouter();
+
+  // Debug the useAuthenticate hook
+  console.log('🔍 useAuthenticate hook result:', authenticateHook);
+  console.log('🔍 signIn function:', signIn);
+  console.log('🔍 signIn type:', typeof signIn);
 
   // Check if user is already authenticated and redirect
   useEffect(() => {
@@ -33,17 +39,28 @@ export default function WelcomePage() {
     setIsAuthenticating(true);
     setError(null);
     
+    console.log('🚀 Starting authentication...');
+    console.log('🔍 useAuthenticate hook:', { signIn });
+    
     try {
       const result = await signIn();
       console.log('🔑 SIGNIN RESULT:', result);
+      console.log('🔑 RESULT TYPE:', typeof result);
+      console.log('🔑 RESULT KEYS:', result ? Object.keys(result) : 'null/undefined');
       
       if (result) {
-        // Extract user data from result
-        const userData = result as { fid?: string; user?: { fid?: string } };
-        const fid = userData.fid || userData.user?.fid || 'unknown';
+        // Extract user data from result - try different possible structures
+        console.log('🔍 Analyzing result structure...');
+        console.log('🔍 result.fid:', (result as any).fid);
+        console.log('🔍 result.user:', (result as any).user);
+        console.log('🔍 result.userData:', (result as any).userData);
+        console.log('🔍 result.data:', (result as any).data);
         
-        console.log('Authenticated user FID:', fid);
-        console.log('🔑 USER DATA FOR SERVER VERIFICATION:', userData);
+        const userData = result as any;
+        const fid = userData.fid || userData.user?.fid || userData.userData?.fid || userData.data?.fid || 'unknown';
+        
+        console.log('✅ Authenticated user FID:', fid);
+        console.log('🔑 FULL USER DATA:', JSON.stringify(userData, null, 2));
         
         setUser(userData);
         
@@ -53,14 +70,23 @@ export default function WelcomePage() {
           timestamp: Date.now()
         };
         localStorage.setItem('calimero-auth', JSON.stringify(authData));
+        console.log('💾 Stored auth data:', authData);
         
         // Redirect to marketplace
         setTimeout(() => {
           router.push('/marketplace');
         }, 1000);
+      } else {
+        console.log('❌ No result from signIn()');
+        setError('No authentication result received');
       }
     } catch (error) {
-      console.error('Authentication failed:', error);
+      console.error('❌ Authentication failed:', error);
+      console.error('❌ Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : 'No stack',
+        name: error instanceof Error ? error.name : 'Unknown'
+      });
       setError(error instanceof Error ? error.message : 'Authentication failed. Please try again.');
     } finally {
       setIsAuthenticating(false);
