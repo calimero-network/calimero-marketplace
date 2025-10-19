@@ -51,13 +51,18 @@ export default function WelcomePage() {
       if (result) {
         // Extract user data from result - try different possible structures
         console.log('🔍 Analyzing result structure...');
-        console.log('🔍 result.fid:', (result as any).fid);
-        console.log('🔍 result.user:', (result as any).user);
-        console.log('🔍 result.userData:', (result as any).userData);
-        console.log('🔍 result.data:', (result as any).data);
+        const resultData = result as Record<string, unknown>;
+        console.log('🔍 result.fid:', resultData.fid);
+        console.log('🔍 result.user:', resultData.user);
+        console.log('🔍 result.userData:', resultData.userData);
+        console.log('🔍 result.data:', resultData.data);
         
-        const userData = result as any;
-        const fid = userData.fid || userData.user?.fid || userData.userData?.fid || userData.data?.fid || 'unknown';
+        const userData = result as Record<string, unknown>;
+        const fid = userData.fid || 
+                   (userData.user as Record<string, unknown>)?.fid || 
+                   (userData.userData as Record<string, unknown>)?.fid || 
+                   (userData.data as Record<string, unknown>)?.fid || 
+                   'unknown';
         
         console.log('✅ Authenticated user FID:', fid);
         console.log('🔑 FULL USER DATA:', JSON.stringify(userData, null, 2));
