@@ -11,6 +11,7 @@ interface AuthResponse {
     issuedAt?: number;
     expiresAt?: number;
   };
+  jwtToken?: string;
   message?: string;
 }
 
@@ -134,9 +135,33 @@ export default function WelcomePage() {
                 fontSize: '14px', 
                 color: '#111827', 
                 wordBreak: 'break-all',
-                margin: 0 
+                margin: '0 0 16px' 
               }}>
                 {authData.user.fid}
+              </p>
+              
+              <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 8px' }}>
+                JWT Token (for server testing):
+              </p>
+              <textarea
+                readOnly
+                value={authData.jwtToken || 'JWT token not available'}
+                style={{
+                  width: '100%',
+                  height: '120px',
+                  fontFamily: 'monospace',
+                  fontSize: '12px',
+                  padding: '8px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  backgroundColor: '#ffffff',
+                  resize: 'vertical',
+                  wordBreak: 'break-all'
+                }}
+                onClick={(e) => e.target.select()}
+              />
+              <p style={{ fontSize: '12px', color: '#6b7280', margin: '8px 0 0', fontStyle: 'italic' }}>
+                Click to select all, then copy for server testing
               </p>
             </div>
 

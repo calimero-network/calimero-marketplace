@@ -105,6 +105,7 @@ export async function GET(request: NextRequest) {
         issuedAt: payload.iat,
         expiresAt: payload.exp,
       },
+      jwtToken: token, // Include the original JWT token for testing
     };
 
     console.log(`[${requestId}] Returning successful response:`, JSON.stringify(response, null, 2));
