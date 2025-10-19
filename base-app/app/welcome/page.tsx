@@ -1,109 +1,78 @@
 'use client';
 
-import { useAuthenticate } from '@coinbase/onchainkit/minikit';
 import { useState, useEffect } from 'react';
+import { useQuickAuth, useMiniKit } from '@coinbase/onchainkit/minikit';
 import { useRouter } from 'next/navigation';
 
+interface AuthResponse {
+  success: boolean;
+  user?: {
+    fid: number;
+    issuedAt?: number;
+    expiresAt?: number;
+  };
+  message?: string;
+}
+
 export default function WelcomePage() {
-  const { signIn } = useAuthenticate();
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const { isFrameReady, setFrameReady, context } = useMiniKit();
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<{ fid?: string } | null>(null);
-  const [debugInfo, setDebugInfo] = useState<string>('');
   const router = useRouter();
 
-  // Debug the useAuthenticate hook
-  console.log('🔍 useAuthenticate hook result:', { signIn });
-  console.log('🔍 signIn function:', signIn);
+  // Initialize the miniapp
+  useEffect(() => {
+    if (!isFrameReady) {
+      setFrameReady();
+    }
+  }, [setFrameReady, isFrameReady]);
+
+  // Use QuickAuth to verify user identity
+  const { data: authData, isLoading: isAuthLoading, error: authError } = useQuickAuth<AuthResponse>(
+    "/api/auth",
+    { method: "GET" }
+  );
 
   // Check if user is already authenticated and redirect
   useEffect(() => {
-    if (user) {
-      setDebugInfo(prev => prev + `\n✅ User authenticated in useEffect: ${JSON.stringify(user)}`);
+    if (authData?.success && authData.user) {
       // Store authentication data in the same format as AuthContext
-      const fid = user.fid || 'unknown';
-      const authData = {
-        address: fid.toString(),
+      const fid = authData.user.fid.toString();
+      const authDataStorage = {
+        address: fid,
         timestamp: Date.now()
       };
-      localStorage.setItem('calimero-auth', JSON.stringify(authData));
-      setDebugInfo(prev => prev + `\n💾 Stored auth data: ${JSON.stringify(authData)}`);
+      localStorage.setItem('calimero-auth', JSON.stringify(authDataStorage));
       
-      // DON'T redirect - just show debug info
-      setDebugInfo(prev => prev + `\n🚫 Redirect disabled for debugging`);
+      // Redirect to marketplace
+      router.push('/marketplace');
     }
-  }, [user, router]);
+  }, [authData, router]);
 
   const handleAuth = async () => {
-    setIsAuthenticating(true);
     setError(null);
-    setDebugInfo('🚀 Starting authentication...');
     
-    try {
-      setDebugInfo(prev => prev + '\n📞 Calling signIn()...');
-      const result = await signIn();
-      setDebugInfo(prev => prev + `\n🔑 SIGNIN RESULT TYPE: ${typeof result}`);
-      setDebugInfo(prev => prev + `\n🔑 SIGNIN RESULT: ${JSON.stringify(result, null, 2)}`);
-      
-      if (result) {
-        setDebugInfo(prev => prev + `\n✅ Authentication successful!`);
-        setDebugInfo(prev => prev + `\n🔑 Result keys: ${Object.keys(result).join(', ')}`);
-        
-        // Try multiple possible FID extraction paths
-        const userData = result as Record<string, unknown>;
-        setDebugInfo(prev => prev + `\n🔍 userData type: ${typeof userData}`);
-        setDebugInfo(prev => prev + `\n🔍 userData keys: ${Object.keys(userData).join(', ')}`);
-        
-        // Check all possible FID locations step by step
-        setDebugInfo(prev => prev + `\n🔍 Checking userData.fid: ${userData.fid}`);
-        setDebugInfo(prev => prev + `\n🔍 Checking userData.user: ${JSON.stringify(userData.user)}`);
-        setDebugInfo(prev => prev + `\n🔍 Checking userData.data: ${JSON.stringify(userData.data)}`);
-        setDebugInfo(prev => prev + `\n🔍 Checking userData.profile: ${JSON.stringify(userData.profile)}`);
-        setDebugInfo(prev => prev + `\n🔍 Checking userData.authenticatedUser: ${JSON.stringify(userData.authenticatedUser)}`);
-        
-        // Check nested user object
-        if (userData.user) {
-          const userObj = userData.user as Record<string, unknown>;
-          setDebugInfo(prev => prev + `\n🔍 userData.user keys: ${Object.keys(userObj).join(', ')}`);
-          setDebugInfo(prev => prev + `\n🔍 userData.user.fid: ${userObj.fid}`);
-        }
-        
-        // Try all possible FID paths
-        const fid = userData.fid || 
-                   (userData.user as Record<string, unknown>)?.fid || 
-                   (userData.data as Record<string, unknown>)?.fid ||
-                   (userData.profile as Record<string, unknown>)?.fid ||
-                   (userData.authenticatedUser as Record<string, unknown>)?.fid ||
-                   'unknown';
-        
-        setDebugInfo(prev => prev + `\n✅ Final FID: ${fid} (type: ${typeof fid})`);
-        
-        // Set the user state
-        setDebugInfo(prev => prev + `\n👤 Setting user state with fid: ${fid}`);
-        setUser({ fid: fid.toString() });
-        
-        // Store authentication data
-        const authData = {
-          address: fid.toString(),
-          timestamp: Date.now()
-        };
-        localStorage.setItem('calimero-auth', JSON.stringify(authData));
-        setDebugInfo(prev => prev + `\n💾 Stored auth data: ${JSON.stringify(authData)}`);
-        setDebugInfo(prev => prev + `\n🎯 Authentication complete - staying on page for debugging`);
-      } else {
-        setDebugInfo(prev => prev + '\n❌ No result from signIn()');
-        setError('No authentication result received');
-      }
-    } catch (error) {
-      setDebugInfo(prev => prev + `\n❌ Authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      setError(error instanceof Error ? error.message : 'Authentication failed. Please try again.');
-    } finally {
-      setIsAuthenticating(false);
+    // Check authentication status
+    if (isAuthLoading) {
+      setError("Please wait while we verify your identity...");
+      return;
     }
+
+    if (authError || !authData?.success) {
+      setError("Authentication failed. Please try again.");
+      return;
+    }
+
+    if (!authData.user) {
+      setError("No user data received from authentication.");
+      return;
+    }
+
+    // User is authenticated, redirect will happen in useEffect
+    console.log("User authenticated:", authData.user);
   };
 
   // Show authenticated state
-  if (user) {
+  if (authData?.success && authData.user) {
     return (
       <div style={{ 
         minHeight: '100vh', 
@@ -160,16 +129,15 @@ export default function WelcomePage() {
               <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 8px' }}>
                 Connected FID:
               </p>
-                  <p style={{ 
-                    fontFamily: 'monospace', 
-                    fontSize: '14px', 
-                    color: '#111827', 
-                    wordBreak: 'break-all',
-                    margin: 0 
-                  }}>
-                    {JSON.stringify(user)}
-                    {user.fid || 'Unknown'}
-                  </p>
+              <p style={{ 
+                fontFamily: 'monospace', 
+                fontSize: '14px', 
+                color: '#111827', 
+                wordBreak: 'break-all',
+                margin: 0 
+              }}>
+                {authData.user.fid}
+              </p>
             </div>
 
             <div style={{
@@ -236,92 +204,53 @@ export default function WelcomePage() {
             </p>
           </div>
 
-              {error && (
-                <div style={{
-                  marginBottom: '24px',
-                  padding: '16px',
-                  backgroundColor: '#fef2f2',
-                  border: '1px solid #fecaca',
-                  borderRadius: '16px'
-                }}>
-                  <div style={{ display: 'flex' }}>
-                    <div style={{ flexShrink: 0 }}>
-                      <svg style={{ height: '20px', width: '20px', color: '#f87171' }} viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div style={{ marginLeft: '12px' }}>
-                      <h3 style={{ fontSize: '14px', fontWeight: '500', color: '#991b1b', margin: '0 0 8px' }}>
-                        Authentication Error
-                      </h3>
-                      <div style={{ fontSize: '14px', color: '#b91c1c' }}>
-                        <p style={{ margin: 0 }}>{error}</p>
-                      </div>
-                    </div>
+          {error && (
+            <div style={{
+              marginBottom: '24px',
+              padding: '16px',
+              backgroundColor: '#fef2f2',
+              border: '1px solid #fecaca',
+              borderRadius: '16px'
+            }}>
+              <div style={{ display: 'flex' }}>
+                <div style={{ flexShrink: 0 }}>
+                  <svg style={{ height: '20px', width: '20px', color: '#f87171' }} viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div style={{ marginLeft: '12px' }}>
+                  <h3 style={{ fontSize: '14px', fontWeight: '500', color: '#991b1b', margin: '0 0 8px' }}>
+                    Authentication Error
+                  </h3>
+                  <div style={{ fontSize: '14px', color: '#b91c1c' }}>
+                    <p style={{ margin: 0 }}>{error}</p>
                   </div>
                 </div>
-              )}
-
-              {debugInfo && (
-                <div style={{
-                  marginBottom: '24px',
-                  padding: '20px',
-                  backgroundColor: '#f0f9ff',
-                  border: '2px solid #0284c7',
-                  borderRadius: '16px',
-                  maxHeight: '400px',
-                  overflowY: 'auto'
-                }}>
-                  <div style={{ display: 'flex' }}>
-                    <div style={{ flexShrink: 0 }}>
-                      <svg style={{ height: '24px', width: '24px', color: '#0284c7' }} viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1H9a1 1 0 110-2h1V7a1 1 0 011-1z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div style={{ marginLeft: '12px', flex: 1 }}>
-                      <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1e40af', margin: '0 0 12px' }}>
-                        🔍 Complete Debug Log
-                      </h3>
-                      <div style={{ 
-                        fontSize: '13px', 
-                        color: '#1e40af', 
-                        fontFamily: 'monospace', 
-                        whiteSpace: 'pre-wrap',
-                        lineHeight: '1.4',
-                        backgroundColor: '#ffffff',
-                        padding: '12px',
-                        borderRadius: '8px',
-                        border: '1px solid #bae6fd'
-                      }}>
-                        {debugInfo}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+              </div>
+            </div>
+          )}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <button
               onClick={handleAuth}
-              disabled={isAuthenticating}
+              disabled={isAuthLoading}
               style={{
                 width: '100%',
-                backgroundColor: isAuthenticating ? '#93c5fd' : '#2563eb',
+                backgroundColor: isAuthLoading ? '#93c5fd' : '#2563eb',
                 color: 'white',
                 padding: '16px 24px',
                 borderRadius: '16px',
                 border: 'none',
                 fontSize: '16px',
                 fontWeight: '500',
-                cursor: isAuthenticating ? 'not-allowed' : 'pointer',
+                cursor: isAuthLoading ? 'not-allowed' : 'pointer',
                 transition: 'background-color 0.2s'
               }}
             >
-              {isAuthenticating ? 'Authenticating...' : 'Sign In with Farcaster'}
+              {isAuthLoading ? 'Authenticating...' : 'Sign In with Farcaster'}
             </button>
 
-
-            {isAuthenticating && (
+            {isAuthLoading && (
               <div style={{ textAlign: 'center' }}>
                 <div style={{
                   display: 'inline-flex',
