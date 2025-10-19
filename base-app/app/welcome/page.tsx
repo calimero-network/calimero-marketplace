@@ -5,28 +5,28 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function WelcomePage() {
-  const authenticateHook = useAuthenticate();
-  const { signIn } = authenticateHook;
+  const { signIn } = useAuthenticate();
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<{ fid?: string; user?: { fid?: string } } | null>(null);
+  const [user, setUser] = useState<{ fid?: string } | null>(null);
   const router = useRouter();
 
   // Debug the useAuthenticate hook
-  console.log('🔍 useAuthenticate hook result:', authenticateHook);
+  console.log('🔍 useAuthenticate hook result:', { signIn });
   console.log('🔍 signIn function:', signIn);
-  console.log('🔍 signIn type:', typeof signIn);
 
   // Check if user is already authenticated and redirect
   useEffect(() => {
     if (user) {
+      console.log('✅ User authenticated:', user);
       // Store authentication data in the same format as AuthContext
-      const fid = user.fid || user.user?.fid || 'unknown';
+      const fid = user.fid || 'unknown';
       const authData = {
         address: fid.toString(),
         timestamp: Date.now()
       };
       localStorage.setItem('calimero-auth', JSON.stringify(authData));
+      console.log('💾 Stored auth data:', authData);
       
       // Redirect to marketplace after a short delay
       setTimeout(() => {
@@ -40,7 +40,6 @@ export default function WelcomePage() {
     setError(null);
     
     console.log('🚀 Starting authentication...');
-    console.log('🔍 useAuthenticate hook:', { signIn });
     
     try {
       const result = await signIn();
@@ -49,25 +48,17 @@ export default function WelcomePage() {
       console.log('🔑 RESULT KEYS:', result ? Object.keys(result) : 'null/undefined');
       
       if (result) {
-        // Extract user data from result - try different possible structures
-        console.log('🔍 Analyzing result structure...');
-        const resultData = result as Record<string, unknown>;
-        console.log('🔍 result.fid:', resultData.fid);
-        console.log('🔍 result.user:', resultData.user);
-        console.log('🔍 result.userData:', resultData.userData);
-        console.log('🔍 result.data:', resultData.data);
+        console.log('✅ Authentication successful!');
+        console.log('🔍 Full result structure:', JSON.stringify(result, null, 2));
         
+        // Extract user data from the result
         const userData = result as Record<string, unknown>;
-        const fid = userData.fid || 
-                   (userData.user as Record<string, unknown>)?.fid || 
-                   (userData.userData as Record<string, unknown>)?.fid || 
-                   (userData.data as Record<string, unknown>)?.fid || 
-                   'unknown';
+        const fid = userData.fid || (userData.user as Record<string, unknown>)?.fid || 'unknown';
         
         console.log('✅ Authenticated user FID:', fid);
-        console.log('🔑 FULL USER DATA:', JSON.stringify(userData, null, 2));
         
-        setUser(userData);
+        // Set the user state
+        setUser({ fid: fid.toString() });
         
         // Store authentication data
         const authData = {
@@ -76,22 +67,12 @@ export default function WelcomePage() {
         };
         localStorage.setItem('calimero-auth', JSON.stringify(authData));
         console.log('💾 Stored auth data:', authData);
-        
-        // Redirect to marketplace
-        setTimeout(() => {
-          router.push('/marketplace');
-        }, 1000);
       } else {
         console.log('❌ No result from signIn()');
         setError('No authentication result received');
       }
     } catch (error) {
       console.error('❌ Authentication failed:', error);
-      console.error('❌ Error details:', {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : 'No stack',
-        name: error instanceof Error ? error.name : 'Unknown'
-      });
       setError(error instanceof Error ? error.message : 'Authentication failed. Please try again.');
     } finally {
       setIsAuthenticating(false);
@@ -156,15 +137,15 @@ export default function WelcomePage() {
               <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 8px' }}>
                 Connected FID:
               </p>
-              <p style={{ 
-                fontFamily: 'monospace', 
-                fontSize: '14px', 
-                color: '#111827', 
-                wordBreak: 'break-all',
-                margin: 0 
-              }}>
-                {user.fid || user.user?.fid || 'Unknown'}
-              </p>
+                  <p style={{ 
+                    fontFamily: 'monospace', 
+                    fontSize: '14px', 
+                    color: '#111827', 
+                    wordBreak: 'break-all',
+                    margin: 0 
+                  }}>
+                    {user.fid || 'Unknown'}
+                  </p>
             </div>
 
             <div style={{
