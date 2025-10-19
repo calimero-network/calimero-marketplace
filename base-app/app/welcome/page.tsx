@@ -158,7 +158,7 @@ export default function WelcomePage() {
                   resize: 'vertical',
                   wordBreak: 'break-all'
                 }}
-                onClick={(e) => e.target.select()}
+                onClick={(e) => (e.target as HTMLTextAreaElement).select()}
               />
               <p style={{ fontSize: '12px', color: '#6b7280', margin: '8px 0 0', fontStyle: 'italic' }}>
                 Click to select all, then copy for server testing
