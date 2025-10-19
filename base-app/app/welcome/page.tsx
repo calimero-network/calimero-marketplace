@@ -9,6 +9,7 @@ export default function WelcomePage() {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<{ fid?: string } | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string>('');
   const router = useRouter();
 
   // Debug the useAuthenticate hook
@@ -38,35 +39,28 @@ export default function WelcomePage() {
   const handleAuth = async () => {
     setIsAuthenticating(true);
     setError(null);
-    
-    console.log('🚀 Starting authentication...');
+    setDebugInfo('🚀 Starting authentication...');
     
     try {
       const result = await signIn();
-      console.log('🔑 SIGNIN RESULT:', result);
-      console.log('🔑 RESULT TYPE:', typeof result);
-      console.log('🔑 RESULT KEYS:', result ? Object.keys(result) : 'null/undefined');
+      setDebugInfo(`🔑 SIGNIN RESULT TYPE: ${typeof result}`);
       
       if (result) {
-        console.log('✅ Authentication successful!');
-        console.log('🔍 Full result structure:', JSON.stringify(result, null, 2));
-        console.log('🔍 Result constructor:', result.constructor.name);
-        console.log('🔍 Result is array:', Array.isArray(result));
-        console.log('🔍 Result keys:', Object.keys(result));
+        setDebugInfo(`✅ Authentication successful! Result keys: ${Object.keys(result).join(', ')}`);
         
         // Try multiple possible FID extraction paths
         const userData = result as Record<string, unknown>;
-        console.log('🔍 userData.fid:', userData.fid);
-        console.log('🔍 userData.user:', userData.user);
-        console.log('🔍 userData.data:', userData.data);
-        console.log('🔍 userData.profile:', userData.profile);
-        console.log('🔍 userData.authenticatedUser:', userData.authenticatedUser);
         
-        // Check if result has nested user object
-        if (userData.user) {
-          console.log('🔍 userData.user keys:', Object.keys(userData.user as Record<string, unknown>));
-          console.log('🔍 userData.user.fid:', (userData.user as Record<string, unknown>).fid);
-        }
+        // Check all possible FID locations
+        const fidChecks = [
+          `userData.fid: ${userData.fid}`,
+          `userData.user: ${userData.user}`,
+          `userData.data: ${userData.data}`,
+          `userData.profile: ${userData.profile}`,
+          `userData.authenticatedUser: ${userData.authenticatedUser}`
+        ];
+        
+        setDebugInfo(`🔍 FID Checks:\n${fidChecks.join('\n')}`);
         
         // Try all possible FID paths
         const fid = userData.fid || 
@@ -76,9 +70,7 @@ export default function WelcomePage() {
                    (userData.authenticatedUser as Record<string, unknown>)?.fid ||
                    'unknown';
         
-        console.log('✅ Final extracted FID:', fid);
-        console.log('🔍 FID type:', typeof fid);
-        console.log('🔍 FID value:', fid);
+        setDebugInfo(`✅ Final FID: ${fid} (type: ${typeof fid})`);
         
         // Set the user state
         setUser({ fid: fid.toString() });
@@ -89,13 +81,13 @@ export default function WelcomePage() {
           timestamp: Date.now()
         };
         localStorage.setItem('calimero-auth', JSON.stringify(authData));
-        console.log('💾 Stored auth data:', authData);
+        setDebugInfo(`💾 Stored auth data: ${JSON.stringify(authData)}`);
       } else {
-        console.log('❌ No result from signIn()');
+        setDebugInfo('❌ No result from signIn()');
         setError('No authentication result received');
       }
     } catch (error) {
-      console.error('❌ Authentication failed:', error);
+      setDebugInfo(`❌ Authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setError(error instanceof Error ? error.message : 'Authentication failed. Please try again.');
     } finally {
       setIsAuthenticating(false);
@@ -235,31 +227,57 @@ export default function WelcomePage() {
             </p>
           </div>
 
-          {error && (
-            <div style={{
-              marginBottom: '24px',
-              padding: '16px',
-              backgroundColor: '#fef2f2',
-              border: '1px solid #fecaca',
-              borderRadius: '16px'
-            }}>
-              <div style={{ display: 'flex' }}>
-                <div style={{ flexShrink: 0 }}>
-                  <svg style={{ height: '20px', width: '20px', color: '#f87171' }} viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div style={{ marginLeft: '12px' }}>
-                  <h3 style={{ fontSize: '14px', fontWeight: '500', color: '#991b1b', margin: '0 0 8px' }}>
-                    Authentication Error
-                  </h3>
-                  <div style={{ fontSize: '14px', color: '#b91c1c' }}>
-                    <p style={{ margin: 0 }}>{error}</p>
+              {error && (
+                <div style={{
+                  marginBottom: '24px',
+                  padding: '16px',
+                  backgroundColor: '#fef2f2',
+                  border: '1px solid #fecaca',
+                  borderRadius: '16px'
+                }}>
+                  <div style={{ display: 'flex' }}>
+                    <div style={{ flexShrink: 0 }}>
+                      <svg style={{ height: '20px', width: '20px', color: '#f87171' }} viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div style={{ marginLeft: '12px' }}>
+                      <h3 style={{ fontSize: '14px', fontWeight: '500', color: '#991b1b', margin: '0 0 8px' }}>
+                        Authentication Error
+                      </h3>
+                      <div style={{ fontSize: '14px', color: '#b91c1c' }}>
+                        <p style={{ margin: 0 }}>{error}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          )}
+              )}
+
+              {debugInfo && (
+                <div style={{
+                  marginBottom: '24px',
+                  padding: '16px',
+                  backgroundColor: '#f0f9ff',
+                  border: '1px solid #bae6fd',
+                  borderRadius: '16px'
+                }}>
+                  <div style={{ display: 'flex' }}>
+                    <div style={{ flexShrink: 0 }}>
+                      <svg style={{ height: '20px', width: '20px', color: '#0284c7' }} viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1H9a1 1 0 110-2h1V7a1 1 0 011-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div style={{ marginLeft: '12px', flex: 1 }}>
+                      <h3 style={{ fontSize: '14px', fontWeight: '500', color: '#1e40af', margin: '0 0 8px' }}>
+                        Debug Info
+                      </h3>
+                      <div style={{ fontSize: '12px', color: '#1e40af', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
+                        {debugInfo}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <button
