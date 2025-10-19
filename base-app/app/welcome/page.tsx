@@ -50,12 +50,35 @@ export default function WelcomePage() {
       if (result) {
         console.log('✅ Authentication successful!');
         console.log('🔍 Full result structure:', JSON.stringify(result, null, 2));
+        console.log('🔍 Result constructor:', result.constructor.name);
+        console.log('🔍 Result is array:', Array.isArray(result));
+        console.log('🔍 Result keys:', Object.keys(result));
         
-        // Extract user data from the result
+        // Try multiple possible FID extraction paths
         const userData = result as Record<string, unknown>;
-        const fid = userData.fid || (userData.user as Record<string, unknown>)?.fid || 'unknown';
+        console.log('🔍 userData.fid:', userData.fid);
+        console.log('🔍 userData.user:', userData.user);
+        console.log('🔍 userData.data:', userData.data);
+        console.log('🔍 userData.profile:', userData.profile);
+        console.log('🔍 userData.authenticatedUser:', userData.authenticatedUser);
         
-        console.log('✅ Authenticated user FID:', fid);
+        // Check if result has nested user object
+        if (userData.user) {
+          console.log('🔍 userData.user keys:', Object.keys(userData.user as Record<string, unknown>));
+          console.log('🔍 userData.user.fid:', (userData.user as Record<string, unknown>).fid);
+        }
+        
+        // Try all possible FID paths
+        const fid = userData.fid || 
+                   (userData.user as Record<string, unknown>)?.fid || 
+                   (userData.data as Record<string, unknown>)?.fid ||
+                   (userData.profile as Record<string, unknown>)?.fid ||
+                   (userData.authenticatedUser as Record<string, unknown>)?.fid ||
+                   'unknown';
+        
+        console.log('✅ Final extracted FID:', fid);
+        console.log('🔍 FID type:', typeof fid);
+        console.log('🔍 FID value:', fid);
         
         // Set the user state
         setUser({ fid: fid.toString() });
