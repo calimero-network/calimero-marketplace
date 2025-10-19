@@ -44,8 +44,8 @@ export default function WelcomePage() {
       };
       localStorage.setItem('calimero-auth', JSON.stringify(authDataStorage));
       
-      // Redirect to marketplace
-      router.push('/marketplace');
+      // DON'T redirect - stay on page to copy JWT token
+      console.log('Authentication successful - staying on page for JWT copying');
     }
   }, [authData, router]);
 
@@ -171,7 +171,7 @@ export default function WelcomePage() {
               padding: '16px'
             }}>
               <p style={{ fontSize: '14px', color: '#2563eb', margin: 0 }}>
-                Redirecting to marketplace...
+                ✅ Authentication successful! Copy the JWT token above for testing.
               </p>
             </div>
           </div>
