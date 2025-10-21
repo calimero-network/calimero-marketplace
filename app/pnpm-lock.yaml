@@ -43,7 +43,7 @@ importers:
         version: 6.1.19(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       vite-plugin-environment:
         specifier: ^1.1.3
-        version: 1.1.3(vite@7.1.10(@types/node@16.18.126))
+        version: 1.1.3(vite@7.1.11(@types/node@16.18.126))
       web-vitals:
         specifier: ^2.1.4
         version: 2.1.4
@@ -71,7 +71,7 @@ importers:
         version: 7.18.0(eslint@8.57.1)(typescript@4.9.5)
       '@vitejs/plugin-react':
         specifier: ^4.2.1
-        version: 4.7.0(vite@7.1.10(@types/node@16.18.126))
+        version: 4.7.0(vite@7.1.11(@types/node@16.18.126))
       concurrently:
         specifier: ^7.3.0
         version: 7.6.0
@@ -106,11 +106,11 @@ importers:
         specifier: ^7.13.0
         version: 7.18.0(eslint@8.57.1)(typescript@4.9.5)
       vite:
-        specifier: ^7.1.6
-        version: 7.1.10(@types/node@16.18.126)
+        specifier: ^7.1.11
+        version: 7.1.11(@types/node@16.18.126)
       vite-plugin-node-polyfills:
         specifier: ^0.24.0
-        version: 0.24.0(rollup@4.52.5)(vite@7.1.10(@types/node@16.18.126))
+        version: 0.24.0(rollup@4.52.5)(vite@7.1.11(@types/node@16.18.126))
 
 packages:
 
@@ -3689,8 +3689,8 @@ packages:
     peerDependencies:
       vite: ^2.0.0 || ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0
 
-  vite@7.1.10:
-    resolution: {integrity: sha512-CmuvUBzVJ/e3HGxhg6cYk88NGgTnBoOo7ogtfJJ0fefUWAxN/WDSUa50o+oVBxuIhO8FoEZW0j2eW7sfjs5EtA==}
+  vite@7.1.11:
+    resolution: {integrity: sha512-uzcxnSDVjAopEUjljkWh8EIrg6tlzrjFUfMcR1EVsRDGwf/ccef0qQPRyOrROwhrTDaApueq+ja+KLPlzR/zdg==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
@@ -5577,7 +5577,7 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
-  '@vitejs/plugin-react@4.7.0(vite@7.1.10(@types/node@16.18.126))':
+  '@vitejs/plugin-react@4.7.0(vite@7.1.11(@types/node@16.18.126))':
     dependencies:
       '@babel/core': 7.28.4
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.28.4)
@@ -5585,7 +5585,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.27
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-      vite: 7.1.10(@types/node@16.18.126)
+      vite: 7.1.11(@types/node@16.18.126)
     transitivePeerDependencies:
       - supports-color
 
@@ -8082,19 +8082,19 @@ snapshots:
       is-typed-array: 1.1.15
       which-typed-array: 1.1.19
 
-  vite-plugin-environment@1.1.3(vite@7.1.10(@types/node@16.18.126)):
+  vite-plugin-environment@1.1.3(vite@7.1.11(@types/node@16.18.126)):
     dependencies:
-      vite: 7.1.10(@types/node@16.18.126)
+      vite: 7.1.11(@types/node@16.18.126)
 
-  vite-plugin-node-polyfills@0.24.0(rollup@4.52.5)(vite@7.1.10(@types/node@16.18.126)):
+  vite-plugin-node-polyfills@0.24.0(rollup@4.52.5)(vite@7.1.11(@types/node@16.18.126)):
     dependencies:
       '@rollup/plugin-inject': 5.0.5(rollup@4.52.5)
       node-stdlib-browser: 1.3.1
-      vite: 7.1.10(@types/node@16.18.126)
+      vite: 7.1.11(@types/node@16.18.126)
     transitivePeerDependencies:
       - rollup
 
-  vite@7.1.10(@types/node@16.18.126):
+  vite@7.1.11(@types/node@16.18.126):
     dependencies:
       esbuild: 0.25.11
       fdir: 6.5.0(picomatch@4.0.3)
