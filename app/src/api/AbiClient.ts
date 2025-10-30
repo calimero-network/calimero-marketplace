@@ -7,6 +7,106 @@ import {
 
 // Generated types
 
+export type AppModePayload =
+  | { name: 'ContextManager' }
+  | { name: 'Marketplace' }
+
+export const AppMode = {
+  ContextManager: (): AppModePayload => ({ name: 'ContextManager' }),
+  Marketplace: (): AppModePayload => ({ name: 'Marketplace' }),
+} as const;
+
+export type EscrowStatusPayload =
+  | { name: 'Pending' }
+  | { name: 'Released' }
+  | { name: 'Refunded' }
+
+export const EscrowStatus = {
+  Pending: (): EscrowStatusPayload => ({ name: 'Pending' }),
+  Released: (): EscrowStatusPayload => ({ name: 'Released' }),
+  Refunded: (): EscrowStatusPayload => ({ name: 'Refunded' }),
+} as const;
+
+export interface MarketplaceApp {
+  mode: AppMode;
+  admin_address: string;
+  marketplace_requests: Record<string, MarketplaceRequest>;
+  marketplaces: Record<string, MarketplaceInfo>;
+  request_counter: number;
+  marketplace_counter: number;
+  marketplace_id: string;
+  owner_wallet: string;
+  seller_requests: Record<string, SellerRequest>;
+  sellers: Record<string, SellerInfo>;
+  products: Record<string, Product>;
+  orders: Record<string, Order>;
+  seller_counter: number;
+  product_counter: number;
+  order_counter: number;
+}
+
+export interface MarketplaceInfo {
+  id: string;
+  owner_wallet: string;
+  store_name: string;
+  type_of_goods: string;
+  context_id: string;
+  created_at: number;
+}
+
+export interface MarketplaceRequest {
+  id: string;
+  owner_wallet: string;
+  store_name: string;
+  type_of_goods: string;
+  signature: string;
+  timestamp: number;
+  approved: boolean;
+}
+
+export interface Order {
+  id: string;
+  buyer_wallet: string;
+  product_id: string;
+  seller_id: string;
+  amount: string;
+  escrow_status: EscrowStatus;
+  qr_payload: string;
+  created_at: number;
+  delivered_at: number | null;
+}
+
+export interface Product {
+  id: string;
+  seller_id: string;
+  name: string;
+  description: string;
+  quantity: number;
+  price: string;
+  image_url: string;
+  category: string;
+  shipping_info: string;
+  created_at: number;
+}
+
+export interface SellerInfo {
+  id: string;
+  wallet_address: string;
+  company_name: string;
+  company_details: string;
+  approved_at: number;
+}
+
+export interface SellerRequest {
+  id: string;
+  wallet_address: string;
+  company_name: string;
+  company_details: string;
+  signature: string;
+  timestamp: number;
+  approved: boolean;
+}
+
 
 /**
  * Utility class for handling byte conversions in Calimero

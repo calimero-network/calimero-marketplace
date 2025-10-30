@@ -8,6 +8,7 @@ include!(env!("GENERATED_ABI_PATH"));
 use calimero_sdk::app;
 use calimero_sdk::borsh::{BorshDeserialize, BorshSerialize};
 use calimero_sdk::serde::{Deserialize, Serialize};
+use calimero_storage::collections::crdt_meta::{MergeError, Mergeable};
 use calimero_storage::collections::UnorderedMap;
 use calimero_storage::env;
 use thiserror::Error;
@@ -29,6 +30,16 @@ pub struct MarketplaceRequest {
     pub approved: bool,
 }
 
+impl Mergeable for MarketplaceRequest {
+    fn merge(&mut self, other: &Self) -> Result<(), MergeError> {
+        // LWW semantics: take the version with the latest timestamp
+        if other.timestamp >= self.timestamp {
+            *self = other.clone();
+        }
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone, BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
 #[borsh(crate = "calimero_sdk::borsh")]
 #[serde(crate = "calimero_sdk::serde")]
@@ -39,6 +50,16 @@ pub struct MarketplaceInfo {
     pub type_of_goods: String,
     pub context_id: String,
     pub created_at: u64,
+}
+
+impl Mergeable for MarketplaceInfo {
+    fn merge(&mut self, other: &Self) -> Result<(), MergeError> {
+        // LWW semantics: take the version with the latest created_at
+        if other.created_at >= self.created_at {
+            *self = other.clone();
+        }
+        Ok(())
+    }
 }
 
 #[derive(Debug, Clone, BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
@@ -54,6 +75,16 @@ pub struct SellerRequest {
     pub approved: bool,
 }
 
+impl Mergeable for SellerRequest {
+    fn merge(&mut self, other: &Self) -> Result<(), MergeError> {
+        // LWW semantics: take the version with the latest timestamp
+        if other.timestamp >= self.timestamp {
+            *self = other.clone();
+        }
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone, BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
 #[borsh(crate = "calimero_sdk::borsh")]
 #[serde(crate = "calimero_sdk::serde")]
@@ -63,6 +94,16 @@ pub struct SellerInfo {
     pub company_name: String,
     pub company_details: String,
     pub approved_at: u64,
+}
+
+impl Mergeable for SellerInfo {
+    fn merge(&mut self, other: &Self) -> Result<(), MergeError> {
+        // LWW semantics: take the version with the latest approved_at
+        if other.approved_at >= self.approved_at {
+            *self = other.clone();
+        }
+        Ok(())
+    }
 }
 
 #[derive(Debug, Clone, BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
@@ -81,6 +122,16 @@ pub struct Product {
     pub created_at: u64,
 }
 
+impl Mergeable for Product {
+    fn merge(&mut self, other: &Self) -> Result<(), MergeError> {
+        // LWW semantics: take the version with the latest created_at
+        if other.created_at >= self.created_at {
+            *self = other.clone();
+        }
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone, BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
 #[borsh(crate = "calimero_sdk::borsh")]
 #[serde(crate = "calimero_sdk::serde")]
@@ -88,6 +139,14 @@ pub enum EscrowStatus {
     Pending,
     Released,
     Refunded,
+}
+
+impl Mergeable for EscrowStatus {
+    fn merge(&mut self, other: &Self) -> Result<(), MergeError> {
+        // LWW semantics: take the other value
+        *self = other.clone();
+        Ok(())
+    }
 }
 
 #[derive(Debug, Clone, BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
@@ -105,12 +164,33 @@ pub struct Order {
     pub delivered_at: Option<u64>,
 }
 
+impl Mergeable for Order {
+    fn merge(&mut self, other: &Self) -> Result<(), MergeError> {
+        // LWW semantics: take the version with the latest created_at
+        // For delivered_at, prefer the one with a value if timestamps are equal
+        if other.created_at > self.created_at {
+            *self = other.clone();
+        } else if other.created_at == self.created_at && other.delivered_at.is_some() && self.delivered_at.is_none() {
+            *self = other.clone();
+        }
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone, BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq)]
 #[borsh(crate = "calimero_sdk::borsh")]
 #[serde(crate = "calimero_sdk::serde")]
 pub enum AppMode {
     ContextManager,
     Marketplace,
+}
+
+impl Mergeable for AppMode {
+    fn merge(&mut self, other: &Self) -> Result<(), MergeError> {
+        // LWW semantics: take the other value
+        *self = other.clone();
+        Ok(())
+    }
 }
 
 // ============================================================================
@@ -125,15 +205,15 @@ pub struct MarketplaceApp {
     mode: AppMode,
 
     // ContextManager fields
-    admin_address: Option<String>,
+    admin_address: String,
     marketplace_requests: UnorderedMap<String, MarketplaceRequest>,
     marketplaces: UnorderedMap<String, MarketplaceInfo>,
     request_counter: u64,
     marketplace_counter: u64,
 
     // Marketplace fields
-    marketplace_id: Option<String>,
-    owner_wallet: Option<String>,
+    marketplace_id: String,
+    owner_wallet: String,
     seller_requests: UnorderedMap<String, SellerRequest>,
     sellers: UnorderedMap<String, SellerInfo>,
     products: UnorderedMap<String, Product>,
@@ -192,13 +272,13 @@ impl MarketplaceApp {
         app::log!("Creating uninitialized MarketplaceApp - must call init_manager or init_marketplace");
         MarketplaceApp {
             mode: AppMode::ContextManager, // default mode, will be set properly during init
-            admin_address: None,
+            admin_address: String::new(),
             marketplace_requests: UnorderedMap::new(),
             marketplaces: UnorderedMap::new(),
             request_counter: 0,
             marketplace_counter: 0,
-            marketplace_id: None,
-            owner_wallet: None,
+            marketplace_id: String::new(),
+            owner_wallet: String::new(),
             seller_requests: UnorderedMap::new(),
             sellers: UnorderedMap::new(),
             products: UnorderedMap::new(),
@@ -213,7 +293,7 @@ impl MarketplaceApp {
     pub fn init_manager(&mut self, admin_address: String) -> app::Result<String> {
         app::log!("Initializing ContextManager with admin: {}", admin_address);
         self.mode = AppMode::ContextManager;
-        self.admin_address = Some(admin_address.clone());
+        self.admin_address = admin_address.clone();
         Ok(format!("Initialized as ContextManager with admin: {}", admin_address))
     }
 
@@ -221,8 +301,8 @@ impl MarketplaceApp {
     pub fn init_marketplace(&mut self, marketplace_id: String, owner_wallet: String) -> app::Result<String> {
         app::log!("Initializing Marketplace {} for owner {}", marketplace_id, owner_wallet);
         self.mode = AppMode::Marketplace;
-        self.marketplace_id = Some(marketplace_id.clone());
-        self.owner_wallet = Some(owner_wallet.clone());
+        self.marketplace_id = marketplace_id.clone();
+        self.owner_wallet = owner_wallet.clone();
         Ok(format!("Initialized as Marketplace {} for owner {}", marketplace_id, owner_wallet))
     }
 
@@ -351,7 +431,7 @@ impl MarketplaceApp {
             app::bail!("This method is only available in ContextManager mode");
         }
 
-        Ok(self.admin_address.clone().unwrap_or_default())
+        Ok(self.admin_address.clone())
     }
 
     // ========================================================================
@@ -631,7 +711,7 @@ impl MarketplaceApp {
             app::bail!("This method is only available in Marketplace mode");
         }
 
-        Ok(self.owner_wallet.clone().unwrap_or_default())
+        Ok(self.owner_wallet.clone())
     }
 
     pub fn get_marketplace_id(&self) -> app::Result<String> {
@@ -639,7 +719,7 @@ impl MarketplaceApp {
             app::bail!("This method is only available in Marketplace mode");
         }
 
-        Ok(self.marketplace_id.clone().unwrap_or_default())
+        Ok(self.marketplace_id.clone())
     }
 
     // ========================================================================

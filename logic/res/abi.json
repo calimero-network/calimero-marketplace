@@ -1,6 +1,458 @@
 {
   "schema_version": "wasm-abi/1",
-  "types": {},
+  "types": {
+    "AppMode": {
+      "kind": "variant",
+      "variants": [
+        {
+          "name": "ContextManager"
+        },
+        {
+          "name": "Marketplace"
+        }
+      ]
+    },
+    "EscrowStatus": {
+      "kind": "variant",
+      "variants": [
+        {
+          "name": "Pending"
+        },
+        {
+          "name": "Released"
+        },
+        {
+          "name": "Refunded"
+        }
+      ]
+    },
+    "MarketplaceApp": {
+      "kind": "record",
+      "fields": [
+        {
+          "name": "mode",
+          "type": {
+            "$ref": "AppMode"
+          }
+        },
+        {
+          "name": "admin_address",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "marketplace_requests",
+          "type": {
+            "kind": "map",
+            "key": {
+              "kind": "string"
+            },
+            "value": {
+              "$ref": "MarketplaceRequest"
+            }
+          }
+        },
+        {
+          "name": "marketplaces",
+          "type": {
+            "kind": "map",
+            "key": {
+              "kind": "string"
+            },
+            "value": {
+              "$ref": "MarketplaceInfo"
+            }
+          }
+        },
+        {
+          "name": "request_counter",
+          "type": {
+            "kind": "u64"
+          }
+        },
+        {
+          "name": "marketplace_counter",
+          "type": {
+            "kind": "u64"
+          }
+        },
+        {
+          "name": "marketplace_id",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "owner_wallet",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "seller_requests",
+          "type": {
+            "kind": "map",
+            "key": {
+              "kind": "string"
+            },
+            "value": {
+              "$ref": "SellerRequest"
+            }
+          }
+        },
+        {
+          "name": "sellers",
+          "type": {
+            "kind": "map",
+            "key": {
+              "kind": "string"
+            },
+            "value": {
+              "$ref": "SellerInfo"
+            }
+          }
+        },
+        {
+          "name": "products",
+          "type": {
+            "kind": "map",
+            "key": {
+              "kind": "string"
+            },
+            "value": {
+              "$ref": "Product"
+            }
+          }
+        },
+        {
+          "name": "orders",
+          "type": {
+            "kind": "map",
+            "key": {
+              "kind": "string"
+            },
+            "value": {
+              "$ref": "Order"
+            }
+          }
+        },
+        {
+          "name": "seller_counter",
+          "type": {
+            "kind": "u64"
+          }
+        },
+        {
+          "name": "product_counter",
+          "type": {
+            "kind": "u64"
+          }
+        },
+        {
+          "name": "order_counter",
+          "type": {
+            "kind": "u64"
+          }
+        }
+      ]
+    },
+    "MarketplaceInfo": {
+      "kind": "record",
+      "fields": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "owner_wallet",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "store_name",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "type_of_goods",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "context_id",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "u64"
+          }
+        }
+      ]
+    },
+    "MarketplaceRequest": {
+      "kind": "record",
+      "fields": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "owner_wallet",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "store_name",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "type_of_goods",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "signature",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": {
+            "kind": "u64"
+          }
+        },
+        {
+          "name": "approved",
+          "type": {
+            "kind": "bool"
+          }
+        }
+      ]
+    },
+    "Order": {
+      "kind": "record",
+      "fields": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "buyer_wallet",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "product_id",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "seller_id",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "amount",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "escrow_status",
+          "type": {
+            "$ref": "EscrowStatus"
+          }
+        },
+        {
+          "name": "qr_payload",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "u64"
+          }
+        },
+        {
+          "name": "delivered_at",
+          "type": {
+            "kind": "u64"
+          },
+          "nullable": true
+        }
+      ]
+    },
+    "Product": {
+      "kind": "record",
+      "fields": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "seller_id",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "name",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "description",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "quantity",
+          "type": {
+            "kind": "u32"
+          }
+        },
+        {
+          "name": "price",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "image_url",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "category",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "shipping_info",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "u64"
+          }
+        }
+      ]
+    },
+    "SellerInfo": {
+      "kind": "record",
+      "fields": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "wallet_address",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "company_name",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "company_details",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "approved_at",
+          "type": {
+            "kind": "u64"
+          }
+        }
+      ]
+    },
+    "SellerRequest": {
+      "kind": "record",
+      "fields": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "wallet_address",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "company_name",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "company_details",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "signature",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": {
+            "kind": "u64"
+          }
+        },
+        {
+          "name": "approved",
+          "type": {
+            "kind": "bool"
+          }
+        }
+      ]
+    }
+  },
   "methods": [
     {
       "name": "init",
@@ -354,5 +806,6 @@
       }
     }
   ],
-  "events": []
+  "events": [],
+  "state_root": "MarketplaceApp"
 }
