@@ -37,9 +37,8 @@ export default function BuyerMarketplace() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [buyerWallet] = useState('0xBuyerWallet001');
 
-  // TODO: Update this ID after running `pnpm network:bootstrap`
-  // Look for "marketplace_context_id" in the bootstrap output
-  const MARKETPLACE_CONTEXT_ID = 'A2gohzYWwdgguTs4frBMpctuMTY7gwTDFG5BtZ1UN28L';
+  // Updated with bootstrap output: context_id
+  const MARKETPLACE_CONTEXT_ID = 'FrHTTbHBVi4zsu7grrjiTGnVH67aYmxyp2kbhybLcBtb';
 
   useEffect(() => {
     // Load data regardless of auth state for demo purposes

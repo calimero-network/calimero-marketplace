@@ -184,7 +184,6 @@ pnpm app:dev
 ### Short Term
 - [ ] Add proper error handling in frontend
 - [ ] Implement loading states for all API calls
-- [ ] Add toast notifications for user feedback
 - [ ] Update SellerDashboard with new context ID
 - [ ] Update BuyerMarketplace with new context ID
 
@@ -194,6 +193,7 @@ pnpm app:dev
 - [ ] Add search/filter functionality
 - [ ] Implement pagination for products/orders
 - [ ] Add delivery tracking status
+- [ ] Add toast notifications for user feedback
 
 ### Long Term
 - [ ] Real USDC integration (blockchain)

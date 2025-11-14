@@ -577,5 +577,6 @@
       }
     }
   ],
-  "events": []
+  "events": [],
+  "state_root": "MarketplaceApp"
 }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCalimero } from '@calimero-network/calimero-client';
+import { useAuth } from '../../contexts/AuthContext';
 import { AbiClient } from '../../api/AbiClient';
 
 interface Product {
@@ -19,6 +20,7 @@ interface Product {
 export default function SellerDashboard() {
   const navigate = useNavigate();
   const { app } = useCalimero();
+  const { user, logout } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddProduct, setShowAddProduct] = useState(false);
@@ -35,9 +37,8 @@ export default function SellerDashboard() {
     shippingInfo: '',
   });
 
-  // TODO: Update this ID after running `pnpm network:bootstrap`
-  // Look for "marketplace_context_id" in the bootstrap output
-  const MARKETPLACE_CONTEXT_ID = 'A2gohzYWwdgguTs4frBMpctuMTY7gwTDFG5BtZ1UN28L';
+  // Updated with bootstrap output: context_id
+  const MARKETPLACE_CONTEXT_ID = 'FrHTTbHBVi4zsu7grrjiTGnVH67aYmxyp2kbhybLcBtb';
 
   useEffect(() => {
     // Load products on mount (no auth required for demo)
@@ -82,33 +83,35 @@ export default function SellerDashboard() {
     e.preventDefault();
 
     try {
-      if (!app) {
-        alert('Please connect your wallet first to add products.');
-        return;
+      // If app is available, try real API call first
+      if (app) {
+        const contexts = await app.fetchContexts();
+        const marketplaceContext = contexts.find(c => c.id === MARKETPLACE_CONTEXT_ID);
+        if (marketplaceContext) {
+          const api = new AbiClient(app, marketplaceContext);
+
+          await api.addProduct({
+            seller_wallet: formData.sellerWallet,
+            name: formData.name,
+            description: formData.description,
+            quantity: formData.quantity,
+            price: formData.price,
+            image_url: formData.imageUrl,
+            category: formData.category,
+            shipping_info: formData.shippingInfo,
+            _signature: `0xSig_${Date.now()}`,
+          });
+
+          // Only reload products after successful save to backend
+          await loadProducts();
+          alert('Product added successfully!');
+        } else {
+          throw new Error('Marketplace context not found');
+        }
+      } else {
+        throw new Error('Calimero app not initialized. Cannot add product.');
       }
 
-      const contexts = await app.fetchContexts();
-      const marketplaceContext = contexts.find(c => c.id === MARKETPLACE_CONTEXT_ID);
-      if (!marketplaceContext) {
-        alert('Marketplace context not found. Please ensure the network is bootstrapped correctly.');
-        return;
-      }
-
-      const api = new AbiClient(app, marketplaceContext);
-
-      await api.addProduct({
-        seller_wallet: formData.sellerWallet,
-        name: formData.name,
-        description: formData.description,
-        quantity: formData.quantity,
-        price: formData.price,
-        image_url: formData.imageUrl,
-        category: formData.category,
-        shipping_info: formData.shippingInfo,
-        _signature: `0xSig_${Date.now()}`,
-      });
-
-      alert('Product added successfully!');
       setShowAddProduct(false);
       setFormData({
         sellerWallet: '0xSellerWallet001',
@@ -120,10 +123,15 @@ export default function SellerDashboard() {
         category: '',
         shippingInfo: '',
       });
-      await loadProducts();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding product:', error);
-      alert('Error adding product. See console for details.');
+      const errorMessage = error?.message || error?.toString() || 'Unknown error';
+
+      if (errorMessage.includes('Seller not found')) {
+        alert('Cannot add product: Your seller account is not approved yet. Please wait for admin approval.');
+      } else {
+        alert(`Error adding product: ${errorMessage}`);
+      }
     }
   };
 
@@ -138,6 +146,7 @@ export default function SellerDashboard() {
         <div>
           <h1 style={{ fontSize: '36px', marginBottom: '8px' }}>🛒 Seller Dashboard</h1>
           <p style={{ color: '#666' }}>Manage your products and inventory</p>
+          {user && <p style={{ color: '#999', fontSize: '14px' }}>Logged in as: {user.username}</p>}
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
           <button
@@ -154,7 +163,7 @@ export default function SellerDashboard() {
             + Add Product
           </button>
           <button
-            onClick={() => navigate('/marketplace')}
+            onClick={() => navigate('/')}
             style={{
               padding: '10px 20px',
               backgroundColor: '#4f46e5',
@@ -165,6 +174,22 @@ export default function SellerDashboard() {
             }}
           >
             ← Back
+          </button>
+          <button
+            onClick={() => {
+              logout();
+              navigate('/login');
+            }}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: '#ef4444',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+            }}
+          >
+            Logout
           </button>
         </div>
       </div>
