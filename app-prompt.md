@@ -203,24 +203,21 @@ Let's build a marketplace app as a Calimero application.
 
 These are the stakeholders in the marketplace app:
 
-- Admins 
-- Marketplace Owners
+- Admins
 - Sellers
 - Buyers
 
 I'll now give you the first happy path scenario that you'll build around.
 
-- Admin spins up a new Calimero Marketplace instance creating the Context Manager that contains the list of marketplaces. Every marketplace is a separate context.
+- Admin and marketplace owner spins up a new Calimero Marketplace for a certain type of a good (eg. electronics)
 
-- Marketplace Owner requests from the Admin to create a new marketplace with the following data - store name, type of goods, (more fields to be decided at a later point) - the data is signed by the wallet - this should be the base wallet used for kickbacks
+- Marketplace has a store page that shows the list of items that are being sold
 
-- Admin adds the new owner and pairs it's newly generated id with the new owners wallet address
+- First Seller comes in and requests to start selling; submits the following data - company details (no kyc for now) and product details (name, quantity, prices) - sings with a wallet (TODO, leave it as a stub at first)
 
-- First Seller comes in and requests to start selling; submits the following data - company details (legal stuff, no kyc for now), product details (name, quantity, prices) - data signed by Sellers Base wallet
+- Admin verifies the signature and approves; sellers product is then shown on the store page; store page is reachable for everyone
 
-- Marketplace Owner verifies the signature and approves
-
-- First buyer comes in and purchases a product - tokens (USDC) submitted into the escrow - QR code is generated with a short link containing a payload the the buyer will sign
+- A Buyer wants to purchase the product in USDC - tokens (USDC) submitted into the escrow - QR code is generated with a short link containing a payload the the buyer will sign
 
 - Goods arrive to the user, users app scans the QR code which triggers escrow release
 

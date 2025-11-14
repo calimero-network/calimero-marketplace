@@ -3,18 +3,19 @@ import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import { CalimeroProvider, AppMode } from '@calimero-network/calimero-client';
 import { ToastProvider } from '@calimero-network/mero-ui';
 
-import Authenticate from './pages/login/Authenticate';
 import MarketplaceHome from './pages/marketplace/MarketplaceHome';
 import AdminDashboard from './pages/marketplace/AdminDashboard';
-import OwnerDashboard from './pages/marketplace/OwnerDashboard';
 import SellerDashboard from './pages/marketplace/SellerDashboard';
 import BuyerMarketplace from './pages/marketplace/BuyerMarketplace';
-import TestInventory from './pages/marketplace/TestInventory';
 
 export default function App() {
+  // Updated with bootstrap output: app_id
   const [clientAppId] = useState<string>(
-    'BNL3n4b5oxe4X94SgNCFFNPgHxQVMRzdzRb2Dj2XvqgV',
+    '3W8yWDzGUgCGEXVMRQkspcVwYZ3u8NMdxB9oDDHxd31x',
   );
+
+  // Context ID from bootstrap: FrHTTbHBVi4zsu7grrjiTGnVH67aYmxyp2kbhybLcBtb
+  // Update this in individual dashboard components
 
   return (
     <CalimeroProvider
@@ -25,13 +26,10 @@ export default function App() {
       <ToastProvider>
         <BrowserRouter basename="/">
           <Routes>
-            <Route path="/" element={<Authenticate />} />
-            <Route path="/marketplace" element={<MarketplaceHome />} />
+            <Route path="/" element={<MarketplaceHome />} />
             <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/owner" element={<OwnerDashboard />} />
             <Route path="/seller" element={<SellerDashboard />} />
-            <Route path="/buyer" element={<BuyerMarketplace />} />
-            <Route path="/test" element={<TestInventory />} />
+            <Route path="/store" element={<BuyerMarketplace />} />
           </Routes>
         </BrowserRouter>
       </ToastProvider>

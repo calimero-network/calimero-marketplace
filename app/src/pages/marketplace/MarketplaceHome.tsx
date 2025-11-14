@@ -7,15 +7,9 @@ export default function MarketplaceHome() {
   const roles = [
     {
       title: 'Admin',
-      description: 'Manage marketplace creation requests and approve new marketplaces',
+      description: 'Approve seller registrations and manage marketplace settings',
       path: '/admin',
       icon: '👨‍💼',
-    },
-    {
-      title: 'Marketplace Owner',
-      description: 'Approve sellers, manage products, and view orders for your marketplace',
-      path: '/owner',
-      icon: '🏪',
     },
     {
       title: 'Seller',
@@ -24,9 +18,9 @@ export default function MarketplaceHome() {
       icon: '🛒',
     },
     {
-      title: 'Buyer',
+      title: 'Store',
       description: 'Browse products, make purchases, and track your orders',
-      path: '/buyer',
+      path: '/store',
       icon: '🛍️',
     },
   ];
@@ -85,20 +79,20 @@ export default function MarketplaceHome() {
 
       <div style={{ marginTop: '60px', padding: '24px', backgroundColor: '#f9fafb', borderRadius: '12px' }}>
         <h3 style={{ fontSize: '20px', marginBottom: '12px' }}>Getting Started</h3>
-        <ol style={{ lineHeight: '1.8', color: '#666' }}>
-          <li>Select your role above to access the appropriate dashboard</li>
-          <li>The demo data includes:
-            <ul style={{ marginTop: '8px', marginLeft: '20px' }}>
-              <li><strong>Admin:</strong> Wallet 0xAdminWallet123456789</li>
-              <li><strong>Marketplace Owner:</strong> TechGadgets Store (0xOwnerWalletABC)</li>
-              <li><strong>Approved Seller:</strong> TechSupplies Inc (0xSellerWallet001)</li>
-              <li><strong>Pending Seller:</strong> SmartHome Solutions (0xSellerWallet002)</li>
-              <li><strong>Sample Buyer:</strong> 0xBuyerWallet001</li>
-            </ul>
-          </li>
-          <li>3 products are pre-loaded: Wireless Earbuds, USB-C Hub, Mechanical Keyboard</li>
-          <li>1 pending order exists for testing delivery confirmation</li>
-        </ol>
+        <p style={{ lineHeight: '1.8', color: '#666', marginBottom: '16px' }}>
+          Select your role above to access the appropriate dashboard
+        </p>
+        <div style={{ lineHeight: '1.8', color: '#666' }}>
+          <strong>Demo Data Includes:</strong>
+          <ul style={{ marginTop: '8px', marginLeft: '20px' }}>
+            <li><strong>Marketplace:</strong> TechGadgets Electronics Marketplace (Electronics & Accessories)</li>
+            <li><strong>Admin:</strong> Wallet 0xAdminWallet123456789</li>
+            <li><strong>Approved Seller:</strong> TechSupplies Inc (0xSellerWallet001)</li>
+            <li><strong>Pending Seller:</strong> SmartHome Solutions (0xSellerWallet002) - waiting for admin approval</li>
+            <li><strong>3 Products:</strong> Wireless Gaming Mouse, USB-C Hub, RGB Mechanical Keyboard</li>
+            <li><strong>1 Order:</strong> Pending delivery confirmation (Buyer: 0xBuyerWallet001)</li>
+          </ul>
+        </div>
       </div>
     </div>
   );

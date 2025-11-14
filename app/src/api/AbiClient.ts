@@ -7,15 +7,6 @@ import {
 
 // Generated types
 
-export type AppModePayload =
-  | { name: 'ContextManager' }
-  | { name: 'Marketplace' }
-
-export const AppMode = {
-  ContextManager: (): AppModePayload => ({ name: 'ContextManager' }),
-  Marketplace: (): AppModePayload => ({ name: 'Marketplace' }),
-} as const;
-
 export type EscrowStatusPayload =
   | { name: 'Pending' }
   | { name: 'Released' }
@@ -28,14 +19,9 @@ export const EscrowStatus = {
 } as const;
 
 export interface MarketplaceApp {
-  mode: AppMode;
-  admin_address: string;
-  marketplace_requests: Record<string, MarketplaceRequest>;
-  marketplaces: Record<string, MarketplaceInfo>;
-  request_counter: number;
-  marketplace_counter: number;
-  marketplace_id: string;
-  owner_wallet: string;
+  admin_wallet: string;
+  store_name: string;
+  type_of_goods: string;
   seller_requests: Record<string, SellerRequest>;
   sellers: Record<string, SellerInfo>;
   products: Record<string, Product>;
@@ -43,25 +29,6 @@ export interface MarketplaceApp {
   seller_counter: number;
   product_counter: number;
   order_counter: number;
-}
-
-export interface MarketplaceInfo {
-  id: string;
-  owner_wallet: string;
-  store_name: string;
-  type_of_goods: string;
-  context_id: string;
-  created_at: number;
-}
-
-export interface MarketplaceRequest {
-  id: string;
-  owner_wallet: string;
-  store_name: string;
-  type_of_goods: string;
-  signature: string;
-  timestamp: number;
-  approved: boolean;
 }
 
 export interface Order {
@@ -226,10 +193,10 @@ export class AbiClient {
   }
 
   /**
-   * init_manager
+   * setup_marketplace
    */
-  public async initManager(params: { admin_address: string }): Promise<string> {
-    const response = await this.app.execute(this.context, 'init_manager', params);
+  public async setupMarketplace(params: { admin_wallet: string; store_name: string; type_of_goods: string }): Promise<string> {
+    const response = await this.app.execute(this.context, 'setup_marketplace', params);
     if (response.success) {
       return response.result as string;
     } else {
@@ -238,82 +205,10 @@ export class AbiClient {
   }
 
   /**
-   * init_marketplace
+   * get_marketplace_info
    */
-  public async initMarketplace(params: { marketplace_id: string; owner_wallet: string }): Promise<string> {
-    const response = await this.app.execute(this.context, 'init_marketplace', params);
-    if (response.success) {
-      return response.result as string;
-    } else {
-      throw new Error(response.error || 'Execution failed');
-    }
-  }
-
-  /**
-   * get_mode
-   */
-  public async getMode(): Promise<string> {
-    const response = await this.app.execute(this.context, 'get_mode', {});
-    if (response.success) {
-      return response.result as string;
-    } else {
-      throw new Error(response.error || 'Execution failed');
-    }
-  }
-
-  /**
-   * request_marketplace
-   */
-  public async requestMarketplace(params: { owner_wallet: string; store_name: string; type_of_goods: string; signature: string }): Promise<string> {
-    const response = await this.app.execute(this.context, 'request_marketplace', params);
-    if (response.success) {
-      return response.result as string;
-    } else {
-      throw new Error(response.error || 'Execution failed');
-    }
-  }
-
-  /**
-   * admin_approve_marketplace
-   */
-  public async adminApproveMarketplace(params: { request_id: string; context_id: string }): Promise<string> {
-    const response = await this.app.execute(this.context, 'admin_approve_marketplace', params);
-    if (response.success) {
-      return response.result as string;
-    } else {
-      throw new Error(response.error || 'Execution failed');
-    }
-  }
-
-  /**
-   * get_all_marketplaces
-   */
-  public async getAllMarketplaces(): Promise<string> {
-    const response = await this.app.execute(this.context, 'get_all_marketplaces', {});
-    if (response.success) {
-      return response.result as string;
-    } else {
-      throw new Error(response.error || 'Execution failed');
-    }
-  }
-
-  /**
-   * get_pending_requests
-   */
-  public async getPendingRequests(): Promise<string> {
-    const response = await this.app.execute(this.context, 'get_pending_requests', {});
-    if (response.success) {
-      return response.result as string;
-    } else {
-      throw new Error(response.error || 'Execution failed');
-    }
-  }
-
-  /**
-   * get_admin_address
-   */
-  public async getAdminAddress(): Promise<string> {
-    const response = await this.app.execute(this.context, 'get_admin_address', {});
+  public async getMarketplaceInfo(): Promise<string> {
+    const response = await this.app.execute(this.context, 'get_marketplace_info', {});
     if (response.success) {
       return response.result as string;
     } else {
@@ -334,10 +229,10 @@ export class AbiClient {
   }
 
   /**
-   * owner_approve_seller
+   * admin_approve_seller
    */
-  public async ownerApproveSeller(params: { seller_id: string }): Promise<void> {
-    const response = await this.app.execute(this.context, 'owner_approve_seller', params);
+  public async adminApproveSeller(params: { seller_id: string }): Promise<void> {
+    const response = await this.app.execute(this.context, 'admin_approve_seller', params);
     if (response.success) {
       return response.result as void;
     } else {
@@ -454,22 +349,10 @@ export class AbiClient {
   }
 
   /**
-   * get_owner_wallet
+   * get_admin_wallet
    */
-  public async getOwnerWallet(): Promise<string> {
-    const response = await this.app.execute(this.context, 'get_owner_wallet', {});
-    if (response.success) {
-      return response.result as string;
-    } else {
-      throw new Error(response.error || 'Execution failed');
-    }
-  }
-
-  /**
-   * get_marketplace_id
-   */
-  public async getMarketplaceId(): Promise<string> {
-    const response = await this.app.execute(this.context, 'get_marketplace_id', {});
+  public async getAdminWallet(): Promise<string> {
+    const response = await this.app.execute(this.context, 'get_admin_wallet', {});
     if (response.success) {
       return response.result as string;
     } else {

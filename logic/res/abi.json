@@ -1,17 +1,6 @@
 {
   "schema_version": "wasm-abi/1",
   "types": {
-    "AppMode": {
-      "kind": "variant",
-      "variants": [
-        {
-          "name": "ContextManager"
-        },
-        {
-          "name": "Marketplace"
-        }
-      ]
-    },
     "EscrowStatus": {
       "kind": "variant",
       "variants": [
@@ -30,61 +19,19 @@
       "kind": "record",
       "fields": [
         {
-          "name": "mode",
-          "type": {
-            "$ref": "AppMode"
-          }
-        },
-        {
-          "name": "admin_address",
+          "name": "admin_wallet",
           "type": {
             "kind": "string"
           }
         },
         {
-          "name": "marketplace_requests",
-          "type": {
-            "kind": "map",
-            "key": {
-              "kind": "string"
-            },
-            "value": {
-              "$ref": "MarketplaceRequest"
-            }
-          }
-        },
-        {
-          "name": "marketplaces",
-          "type": {
-            "kind": "map",
-            "key": {
-              "kind": "string"
-            },
-            "value": {
-              "$ref": "MarketplaceInfo"
-            }
-          }
-        },
-        {
-          "name": "request_counter",
-          "type": {
-            "kind": "u64"
-          }
-        },
-        {
-          "name": "marketplace_counter",
-          "type": {
-            "kind": "u64"
-          }
-        },
-        {
-          "name": "marketplace_id",
+          "name": "store_name",
           "type": {
             "kind": "string"
           }
         },
         {
-          "name": "owner_wallet",
+          "name": "type_of_goods",
           "type": {
             "kind": "string"
           }
@@ -153,94 +100,6 @@
           "name": "order_counter",
           "type": {
             "kind": "u64"
-          }
-        }
-      ]
-    },
-    "MarketplaceInfo": {
-      "kind": "record",
-      "fields": [
-        {
-          "name": "id",
-          "type": {
-            "kind": "string"
-          }
-        },
-        {
-          "name": "owner_wallet",
-          "type": {
-            "kind": "string"
-          }
-        },
-        {
-          "name": "store_name",
-          "type": {
-            "kind": "string"
-          }
-        },
-        {
-          "name": "type_of_goods",
-          "type": {
-            "kind": "string"
-          }
-        },
-        {
-          "name": "context_id",
-          "type": {
-            "kind": "string"
-          }
-        },
-        {
-          "name": "created_at",
-          "type": {
-            "kind": "u64"
-          }
-        }
-      ]
-    },
-    "MarketplaceRequest": {
-      "kind": "record",
-      "fields": [
-        {
-          "name": "id",
-          "type": {
-            "kind": "string"
-          }
-        },
-        {
-          "name": "owner_wallet",
-          "type": {
-            "kind": "string"
-          }
-        },
-        {
-          "name": "store_name",
-          "type": {
-            "kind": "string"
-          }
-        },
-        {
-          "name": "type_of_goods",
-          "type": {
-            "kind": "string"
-          }
-        },
-        {
-          "name": "signature",
-          "type": {
-            "kind": "string"
-          }
-        },
-        {
-          "name": "timestamp",
-          "type": {
-            "kind": "u64"
-          }
-        },
-        {
-          "name": "approved",
-          "type": {
-            "kind": "bool"
           }
         }
       ]
@@ -462,51 +321,10 @@
       }
     },
     {
-      "name": "init_manager",
+      "name": "setup_marketplace",
       "params": [
         {
-          "name": "admin_address",
-          "type": {
-            "kind": "string"
-          }
-        }
-      ],
-      "returns": {
-        "kind": "string"
-      }
-    },
-    {
-      "name": "init_marketplace",
-      "params": [
-        {
-          "name": "marketplace_id",
-          "type": {
-            "kind": "string"
-          }
-        },
-        {
-          "name": "owner_wallet",
-          "type": {
-            "kind": "string"
-          }
-        }
-      ],
-      "returns": {
-        "kind": "string"
-      }
-    },
-    {
-      "name": "get_mode",
-      "params": [],
-      "returns": {
-        "kind": "string"
-      }
-    },
-    {
-      "name": "request_marketplace",
-      "params": [
-        {
-          "name": "owner_wallet",
+          "name": "admin_wallet",
           "type": {
             "kind": "string"
           }
@@ -522,12 +340,6 @@
           "type": {
             "kind": "string"
           }
-        },
-        {
-          "name": "signature",
-          "type": {
-            "kind": "string"
-          }
         }
       ],
       "returns": {
@@ -535,41 +347,7 @@
       }
     },
     {
-      "name": "admin_approve_marketplace",
-      "params": [
-        {
-          "name": "request_id",
-          "type": {
-            "kind": "string"
-          }
-        },
-        {
-          "name": "context_id",
-          "type": {
-            "kind": "string"
-          }
-        }
-      ],
-      "returns": {
-        "kind": "string"
-      }
-    },
-    {
-      "name": "get_all_marketplaces",
-      "params": [],
-      "returns": {
-        "kind": "string"
-      }
-    },
-    {
-      "name": "get_pending_requests",
-      "params": [],
-      "returns": {
-        "kind": "string"
-      }
-    },
-    {
-      "name": "get_admin_address",
+      "name": "get_marketplace_info",
       "params": [],
       "returns": {
         "kind": "string"
@@ -608,7 +386,7 @@
       }
     },
     {
-      "name": "owner_approve_seller",
+      "name": "admin_approve_seller",
       "params": [
         {
           "name": "seller_id",
@@ -792,20 +570,12 @@
       }
     },
     {
-      "name": "get_owner_wallet",
-      "params": [],
-      "returns": {
-        "kind": "string"
-      }
-    },
-    {
-      "name": "get_marketplace_id",
+      "name": "get_admin_wallet",
       "params": [],
       "returns": {
         "kind": "string"
       }
     }
   ],
-  "events": [],
-  "state_root": "MarketplaceApp"
+  "events": []
 }

@@ -3,36 +3,31 @@ import { useNavigate } from 'react-router-dom';
 import { useCalimero } from '@calimero-network/calimero-client';
 import { AbiClient } from '../../api/AbiClient';
 
-interface MarketplaceRequest {
+interface SellerRequest {
   id: string;
-  owner_wallet: string;
-  store_name: string;
-  type_of_goods: string;
+  wallet_address: string;
+  company_name: string;
+  company_details: string;
   signature: string;
   timestamp: number;
   approved: boolean;
 }
 
 interface MarketplaceInfo {
-  id: string;
-  owner_wallet: string;
+  admin_wallet: string;
   store_name: string;
   type_of_goods: string;
-  context_id: string;
-  created_at: number;
 }
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { app } = useCalimero();
-  const [pendingRequests, setPendingRequests] = useState<MarketplaceRequest[]>([]);
-  const [allMarketplaces, setAllMarketplaces] = useState<MarketplaceInfo[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<SellerRequest[]>([]);
+  const [marketplaceInfo, setMarketplaceInfo] = useState<MarketplaceInfo | null>(null);
   const [loading, setLoading] = useState(true);
-  const [adminAddress, setAdminAddress] = useState('');
 
-  // TODO: Update this ID after running `pnpm network:bootstrap`
-  // Look for "manager_context_id" in the bootstrap output
-  const CONTEXT_MANAGER_ID = '6gVrzgJgUiNgLEvXRYLRzsJQxKraaDBkYAydGvDJ2j3v';
+  // Updated with bootstrap output: context_id
+  const MARKETPLACE_CONTEXT_ID = 'FrHTTbHBVi4zsu7grrjiTGnVH67aYmxyp2kbhybLcBtb';
 
   useEffect(() => {
     if (app) {
@@ -51,30 +46,26 @@ export default function AdminDashboard() {
         return;
       }
 
-      // Get contexts and create API client for Context Manager
+      // Get contexts and create API client for Marketplace
       const contexts = await app.fetchContexts();
-      const managerContext = contexts.find(c => c.id === CONTEXT_MANAGER_ID);
+      const marketplaceContext = contexts.find(c => c.id === MARKETPLACE_CONTEXT_ID);
 
-      if (!managerContext) {
-        console.error('Context Manager context not found');
+      if (!marketplaceContext) {
+        console.error('Marketplace context not found');
         return;
       }
 
-      const api = new AbiClient(app, managerContext);
+      const api = new AbiClient(app, marketplaceContext);
 
-      // Fetch admin address
-      const adminAddr = await api.getAdminAddress();
-      setAdminAddress(adminAddr);
+      // Fetch marketplace info
+      const infoJson = await api.getMarketplaceInfo();
+      const info = JSON.parse(infoJson);
+      setMarketplaceInfo(info);
 
-      // Fetch pending requests
-      const requestsJson = await api.getPendingRequests();
+      // Fetch pending seller requests
+      const requestsJson = await api.getPendingSellerRequests();
       const requests = JSON.parse(requestsJson);
-      setPendingRequests(Object.values(requests));
-
-      // Fetch all marketplaces
-      const marketplacesJson = await api.getAllMarketplaces();
-      const marketplaces = JSON.parse(marketplacesJson);
-      setAllMarketplaces(Object.values(marketplaces));
+      setPendingRequests(requests);
 
     } catch (error) {
       console.error('Error loading data:', error);
@@ -83,7 +74,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const approveMarketplace = async (requestId: string) => {
+  const approveSeller = async (sellerId: string) => {
     try {
       if (!app) {
         alert('Please connect your wallet first.');
@@ -91,199 +82,97 @@ export default function AdminDashboard() {
       }
 
       const contexts = await app.fetchContexts();
-      const managerContext = contexts.find(c => c.id === CONTEXT_MANAGER_ID);
+      const marketplaceContext = contexts.find(c => c.id === MARKETPLACE_CONTEXT_ID);
 
-      if (!managerContext) {
-        alert('Context Manager context not found. Please ensure the network is bootstrapped correctly.');
+      if (!marketplaceContext) {
+        alert('Marketplace context not found. Please ensure the network is bootstrapped correctly.');
         return;
       }
 
-      const api = new AbiClient(app, managerContext);
+      const api = new AbiClient(app, marketplaceContext);
 
-      // In a real implementation, you would:
-      // 1. Create a new context for this marketplace
-      // 2. Pass that context ID to admin_approve_marketplace
-      // For demo purposes, we'll use a placeholder
-      const newContextId = `marketplace_context_${Date.now()}`;
+      await api.adminApproveSeller({ seller_id: sellerId });
 
-      await api.adminApproveMarketplace({
-        request_id: requestId,
-        context_id: newContextId,
-      });
-
-      // Reload data
+      alert('Seller approved successfully!');
       await loadData();
-      alert('Marketplace approved successfully!');
-    } catch (error) {
-      console.error('Error approving marketplace:', error);
-      alert('Error approving marketplace. See console for details.');
+
+    } catch (error: any) {
+      console.error('Error approving seller:', error);
+      alert(`Failed to approve seller: ${error.message || 'Unknown error'}`);
     }
   };
 
   if (loading) {
     return (
-      <div style={{ padding: '40px', textAlign: 'center' }}>
-        <h2>Loading...</h2>
+      <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+        <h1>Admin Dashboard</h1>
+        <p>Loading...</p>
       </div>
     );
   }
 
   if (!app) {
     return (
-      <div style={{ padding: '40px', textAlign: 'center' }}>
-        <h2>🔒 Authentication Required</h2>
-        <p style={{ color: '#666', marginTop: '16px' }}>Please connect your wallet to access the Admin Dashboard.</p>
-        <button
-          onClick={() => navigate('/marketplace')}
-          style={{
-            marginTop: '20px',
-            padding: '10px 20px',
-            backgroundColor: '#4f46e5',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-          }}
-        >
-          Go to Home
-        </button>
+      <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+        <h1>Admin Dashboard</h1>
+        <p style={{ color: 'red' }}>
+          CalimeroApp not initialized. Please ensure you are connected.
+        </p>
       </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-        <div>
-          <h1 style={{ fontSize: '36px', marginBottom: '8px' }}>👨‍💼 Admin Dashboard</h1>
-          <p style={{ color: '#666' }}>Admin: {adminAddress}</p>
+    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif', maxWidth: '1200px', margin: '0 auto' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+        <h1 style={{ margin: 0 }}>Admin Dashboard</h1>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={() => navigate('/')} style={buttonStyle}>Home</button>
+          <button onClick={() => navigate('/store')} style={buttonStyle}>View Store</button>
+          <button onClick={() => navigate('/seller')} style={buttonStyle}>Seller View</button>
         </div>
-        <button
-          onClick={() => navigate('/marketplace')}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#4f46e5',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-          }}
-        >
-          ← Back to Home
-        </button>
       </div>
 
-      {/* Pending Requests */}
-      <div style={{ marginBottom: '40px' }}>
-        <h2 style={{ fontSize: '24px', marginBottom: '20px' }}>
-          Pending Marketplace Requests ({pendingRequests.length})
-        </h2>
+      {/* Marketplace Info */}
+      {marketplaceInfo && (
+        <div style={{ ...cardStyle, backgroundColor: '#e3f2fd', marginBottom: '30px' }}>
+          <h2 style={{ marginTop: 0 }}>Marketplace Information</h2>
+          <p><strong>Store Name:</strong> {marketplaceInfo.store_name}</p>
+          <p><strong>Type of Goods:</strong> {marketplaceInfo.type_of_goods}</p>
+          <p><strong>Admin Wallet:</strong> <code>{marketplaceInfo.admin_wallet}</code></p>
+        </div>
+      )}
+
+      {/* Pending Seller Requests */}
+      <div style={cardStyle}>
+        <h2 style={{ marginTop: 0 }}>Pending Seller Requests ({pendingRequests.length})</h2>
+
         {pendingRequests.length === 0 ? (
-          <div style={{ padding: '40px', textAlign: 'center', backgroundColor: '#f9fafb', borderRadius: '8px' }}>
-            <p style={{ color: '#666' }}>No pending marketplace requests</p>
-          </div>
+          <p style={{ color: '#666' }}>No pending seller requests.</p>
         ) : (
-          <div style={{ display: 'grid', gap: '16px' }}>
+          <div style={{ display: 'grid', gap: '15px' }}>
             {pendingRequests.map((request) => (
-              <div
-                key={request.id}
-                style={{
-                  padding: '24px',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '8px',
-                  backgroundColor: '#fff',
-                }}
-              >
+              <div key={request.id} style={{ ...cardStyle, backgroundColor: '#fff3e0', border: '1px solid #ffb74d' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
                   <div style={{ flex: 1 }}>
-                    <h3 style={{ fontSize: '20px', marginBottom: '8px' }}>{request.store_name}</h3>
-                    <p style={{ color: '#666', marginBottom: '4px' }}>
-                      <strong>Type:</strong> {request.type_of_goods}
-                    </p>
-                    <p style={{ color: '#666', marginBottom: '4px' }}>
-                      <strong>Owner:</strong> {request.owner_wallet}
-                    </p>
-                    <p style={{ color: '#666', fontSize: '14px' }}>
-                      <strong>Request ID:</strong> {request.id}
-                    </p>
-                    <p style={{ color: '#999', fontSize: '12px', marginTop: '8px' }}>
-                      Submitted: {new Date(request.timestamp).toLocaleString()}
+                    <h3 style={{ margin: '0 0 10px 0', color: '#e65100' }}>{request.company_name}</h3>
+                    <p><strong>Wallet:</strong> <code>{request.wallet_address}</code></p>
+                    <p><strong>Details:</strong> {request.company_details}</p>
+                    <p style={{ fontSize: '0.9em', color: '#666' }}>
+                      <strong>Requested:</strong> {new Date(request.timestamp / 1000000).toLocaleString()}
                     </p>
                   </div>
                   <button
-                    onClick={() => approveMarketplace(request.id)}
+                    onClick={() => approveSeller(request.id)}
                     style={{
-                      padding: '10px 24px',
-                      backgroundColor: '#10b981',
+                      ...buttonStyle,
+                      backgroundColor: '#4caf50',
                       color: 'white',
-                      border: 'none',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      fontWeight: 'bold',
+                      padding: '10px 20px',
                     }}
                   >
-                    ✓ Approve
+                    Approve
                   </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* All Marketplaces */}
-      <div>
-        <h2 style={{ fontSize: '24px', marginBottom: '20px' }}>
-          Active Marketplaces ({allMarketplaces.length})
-        </h2>
-        {allMarketplaces.length === 0 ? (
-          <div style={{ padding: '40px', textAlign: 'center', backgroundColor: '#f9fafb', borderRadius: '8px' }}>
-            <p style={{ color: '#666' }}>No active marketplaces</p>
-          </div>
-        ) : (
-          <div style={{ display: 'grid', gap: '16px' }}>
-            {allMarketplaces.map((marketplace) => (
-              <div
-                key={marketplace.id}
-                style={{
-                  padding: '24px',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '8px',
-                  backgroundColor: '#fff',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                  <div>
-                    <h3 style={{ fontSize: '20px', marginBottom: '8px' }}>{marketplace.store_name}</h3>
-                    <p style={{ color: '#666', marginBottom: '4px' }}>
-                      <strong>Type:</strong> {marketplace.type_of_goods}
-                    </p>
-                    <p style={{ color: '#666', marginBottom: '4px' }}>
-                      <strong>Owner:</strong> {marketplace.owner_wallet}
-                    </p>
-                    <p style={{ color: '#666', fontSize: '14px' }}>
-                      <strong>Marketplace ID:</strong> {marketplace.id}
-                    </p>
-                    <p style={{ color: '#666', fontSize: '14px' }}>
-                      <strong>Context ID:</strong> {marketplace.context_id}
-                    </p>
-                    <p style={{ color: '#999', fontSize: '12px', marginTop: '8px' }}>
-                      Created: {new Date(marketplace.created_at).toLocaleString()}
-                    </p>
-                  </div>
-                  <div
-                    style={{
-                      padding: '6px 16px',
-                      backgroundColor: '#10b981',
-                      color: 'white',
-                      borderRadius: '20px',
-                      fontSize: '14px',
-                      fontWeight: 'bold',
-                    }}
-                  >
-                    ✓ Active
-                  </div>
                 </div>
               </div>
             ))}
@@ -293,3 +182,20 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+const cardStyle: React.CSSProperties = {
+  backgroundColor: '#f5f5f5',
+  padding: '20px',
+  borderRadius: '8px',
+  marginBottom: '20px',
+};
+
+const buttonStyle: React.CSSProperties = {
+  padding: '8px 16px',
+  backgroundColor: '#1976d2',
+  color: 'white',
+  border: 'none',
+  borderRadius: '4px',
+  cursor: 'pointer',
+  fontSize: '14px',
+};

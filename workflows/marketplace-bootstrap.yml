@@ -1,4 +1,4 @@
-description: Bootstrap Calimero Marketplace with Context Manager and Demo Marketplace
+description: Bootstrap Simplified Calimero Marketplace with Demo Data
 name: Calimero Marketplace Bootstrap
 
 force_pull_image: true
@@ -6,16 +6,16 @@ auth_service: true
 
 nodes:
   chain_id: testnet-1
-  count: 2
+  count: 1
   image: ghcr.io/calimero-network/merod:edge
   prefix: calimero-node
 
 steps:
   # ========================================================================
-  # PART 1: Install Application on Both Nodes
+  # PART 1: Install Application
   # ========================================================================
 
-  - name: Install Marketplace Application on Node 1
+  - name: Install Marketplace Application
     type: install_application
     node: calimero-node-1
     path: logic/res/calimero_marketplace.wasm
@@ -23,153 +23,44 @@ steps:
     outputs:
       app_id: applicationId
 
-  - name: Install Marketplace Application on Node 2
-    type: install_application
-    node: calimero-node-2
-    path: logic/res/calimero_marketplace.wasm
-    dev: true
-
   # ========================================================================
-  # PART 2: Create Context Manager Context
+  # PART 2: Create and Initialize Marketplace
   # ========================================================================
 
-  - name: Create Context Manager Context
+  - name: Create Marketplace Context
     type: create_context
     node: calimero-node-1
     application_id: "{{app_id}}"
     outputs:
-      manager_context_id: contextId
-      manager_member_key: memberPublicKey
+      context_id: contextId
+      member_key: memberPublicKey
 
-  - name: Initialize Context Manager
+  - name: Setup Marketplace
     type: call
     node: calimero-node-1
-    context_id: "{{manager_context_id}}"
-    executor_public_key: "{{manager_member_key}}"
-    method: init_manager
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_key}}"
+    method: setup_marketplace
     args:
-      admin_address: "0xAdminWallet123456789"
-    outputs:
-      init_manager_result: result
-
-  - name: Wait for Context Manager Init
-    type: wait
-    seconds: 2
-
-  # ========================================================================
-  # PART 3: Demo Marketplace Owner Requests Marketplace
-  # ========================================================================
-
-  - name: Request Demo Marketplace
-    type: call
-    node: calimero-node-1
-    context_id: "{{manager_context_id}}"
-    executor_public_key: "{{manager_member_key}}"
-    method: request_marketplace
-    args:
-      owner_wallet: "0xOwnerWalletABC"
-      store_name: "TechGadgets Store"
+      admin_wallet: "0xAdminWallet123456789"
+      store_name: "TechGadgets Electronics Marketplace"
       type_of_goods: "Electronics & Accessories"
-      signature: "0xSignature_marketplace_request"
     outputs:
-      request_result: result
-
-  - name: Wait for Marketplace Request
-    type: wait
-    seconds: 2
-
-  # ========================================================================
-  # PART 4: Create Demo Marketplace Context
-  # ========================================================================
-
-  - name: Create Demo Marketplace Context
-    type: create_context
-    node: calimero-node-1
-    application_id: "{{app_id}}"
-    outputs:
-      marketplace_context_id: contextId
-      marketplace_member_key: memberPublicKey
-
-  - name: Initialize Demo Marketplace
-    type: call
-    node: calimero-node-1
-    context_id: "{{marketplace_context_id}}"
-    executor_public_key: "{{marketplace_member_key}}"
-    method: init_marketplace
-    args:
-      marketplace_id: "market_1"
-      owner_wallet: "0xOwnerWalletABC"
-    outputs:
-      init_marketplace_result: result
+      setup_result: result
 
   - name: Wait for Marketplace Init
     type: wait
     seconds: 2
 
   # ========================================================================
-  # PART 5: Admin Approves Marketplace Request
-  # ========================================================================
-
-  - name: Admin Approve Marketplace
-    type: call
-    node: calimero-node-1
-    context_id: "{{manager_context_id}}"
-    executor_public_key: "{{manager_member_key}}"
-    method: admin_approve_marketplace
-    args:
-      request_id: "req_1"
-      context_id: "{{marketplace_context_id}}"
-    outputs:
-      marketplace_id: result
-
-  - name: Wait for Marketplace Approval
-    type: wait
-    seconds: 2
-
-  # ========================================================================
-  # PART 6: Node 2 Setup and Join Marketplace Context
-  # ========================================================================
-
-  - name: Create Identity on Node 2
-    type: create_identity
-    node: calimero-node-2
-    outputs:
-      node2_public_key: publicKey
-
-  - name: Wait for Identity Creation
-    type: wait
-    seconds: 3
-
-  - name: Invite Node 2 to Marketplace
-    type: invite_identity
-    node: calimero-node-1
-    context_id: "{{marketplace_context_id}}"
-    grantee_id: "{{node2_public_key}}"
-    granter_id: "{{marketplace_member_key}}"
-    capability: member
-    outputs:
-      marketplace_invitation: invitation
-
-  - name: Join Marketplace from Node 2
-    type: join_context
-    node: calimero-node-2
-    context_id: "{{marketplace_context_id}}"
-    invitee_id: "{{node2_public_key}}"
-    invitation: "{{marketplace_invitation}}"
-
-  - name: Wait for Context Join
-    type: wait
-    seconds: 5
-
-  # ========================================================================
-  # PART 7: First Seller Requests Access
+  # PART 3: First Seller Requests Access and Gets Approved
   # ========================================================================
 
   - name: Seller 1 Request Access
     type: call
     node: calimero-node-1
-    context_id: "{{marketplace_context_id}}"
-    executor_public_key: "{{marketplace_member_key}}"
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_key}}"
     method: request_seller_access
     args:
       wallet_address: "0xSellerWallet001"
@@ -183,12 +74,12 @@ steps:
     type: wait
     seconds: 2
 
-  - name: Owner Approve Seller 1
+  - name: Admin Approve Seller 1
     type: call
     node: calimero-node-1
-    context_id: "{{marketplace_context_id}}"
-    executor_public_key: "{{marketplace_member_key}}"
-    method: owner_approve_seller
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_key}}"
+    method: admin_approve_seller
     args:
       seller_id: "seller_1"
     outputs:
@@ -199,23 +90,23 @@ steps:
     seconds: 2
 
   # ========================================================================
-  # PART 8: Seller 1 Adds Products
+  # PART 4: Seller 1 Adds Products
   # ========================================================================
 
-  - name: Add Product 1 - Wireless Earbuds
+  - name: Add Product 1 - Wireless Mouse
     type: call
     node: calimero-node-1
-    context_id: "{{marketplace_context_id}}"
-    executor_public_key: "{{marketplace_member_key}}"
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_key}}"
     method: add_product
     args:
       seller_wallet: "0xSellerWallet001"
-      name: "Premium Wireless Earbuds"
-      description: "High-quality wireless earbuds with active noise cancellation, 30hr battery life"
+      name: "Wireless Gaming Mouse"
+      description: "High-precision wireless gaming mouse with RGB lighting, 16000 DPI sensor"
       quantity: 50
-      price: "99.99"
-      image_url: "https://placeholder.com/earbuds.jpg"
-      category: "Audio"
+      price: "59.99"
+      image_url: "https://placeholder.com/mouse.jpg"
+      category: "Peripherals"
       shipping_info: "Free shipping, 2-3 business days"
       _signature: "0xSignature_product1"
     outputs:
@@ -228,8 +119,8 @@ steps:
   - name: Add Product 2 - USB-C Hub
     type: call
     node: calimero-node-1
-    context_id: "{{marketplace_context_id}}"
-    executor_public_key: "{{marketplace_member_key}}"
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_key}}"
     method: add_product
     args:
       seller_wallet: "0xSellerWallet001"
@@ -251,8 +142,8 @@ steps:
   - name: Add Product 3 - Mechanical Keyboard
     type: call
     node: calimero-node-1
-    context_id: "{{marketplace_context_id}}"
-    executor_public_key: "{{marketplace_member_key}}"
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_key}}"
     method: add_product
     args:
       seller_wallet: "0xSellerWallet001"
@@ -271,19 +162,15 @@ steps:
     type: wait
     seconds: 2
 
-  - name: Wait for Products to Sync
-    type: wait
-    seconds: 3
-
   # ========================================================================
-  # PART 9: Second Seller Request (Pending for Demo)
+  # PART 5: Second Seller Request (Pending for Demo)
   # ========================================================================
 
   - name: Seller 2 Request Access (Pending)
     type: call
-    node: calimero-node-2
-    context_id: "{{marketplace_context_id}}"
-    executor_public_key: "{{node2_public_key}}"
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_key}}"
     method: request_seller_access
     args:
       wallet_address: "0xSellerWallet002"
@@ -300,19 +187,19 @@ steps:
   # Note: Seller 2 is NOT approved - leaving as pending for demo
 
   # ========================================================================
-  # PART 10: First Buyer Makes a Purchase
+  # PART 6: First Buyer Makes a Purchase
   # ========================================================================
 
   - name: Buyer 1 Purchase Product 1
     type: call
     node: calimero-node-1
-    context_id: "{{marketplace_context_id}}"
-    executor_public_key: "{{marketplace_member_key}}"
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_key}}"
     method: purchase_product
     args:
       product_id: "prod_1"
       buyer_wallet: "0xBuyerWallet001"
-      amount: "99.99"
+      amount: "59.99"
       _signature: "0xSignature_purchase1"
     outputs:
       order1_id: output
@@ -322,23 +209,23 @@ steps:
     seconds: 2
 
   # ========================================================================
-  # PART 11: Verify Setup - Get All Data
+  # PART 7: Verify Setup - Get All Data
   # ========================================================================
 
-  - name: Get All Marketplaces
+  - name: Get Marketplace Info
     type: call
     node: calimero-node-1
-    context_id: "{{manager_context_id}}"
-    executor_public_key: "{{manager_member_key}}"
-    method: get_all_marketplaces
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_key}}"
+    method: get_marketplace_info
     outputs:
-      all_marketplaces: output
+      marketplace_info: output
 
   - name: Get All Products
     type: call
     node: calimero-node-1
-    context_id: "{{marketplace_context_id}}"
-    executor_public_key: "{{marketplace_member_key}}"
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_key}}"
     method: get_products
     outputs:
       all_products: output
@@ -346,8 +233,8 @@ steps:
   - name: Get All Sellers
     type: call
     node: calimero-node-1
-    context_id: "{{marketplace_context_id}}"
-    executor_public_key: "{{marketplace_member_key}}"
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_key}}"
     method: get_sellers
     outputs:
       all_sellers: output
@@ -355,8 +242,8 @@ steps:
   - name: Get Pending Seller Requests
     type: call
     node: calimero-node-1
-    context_id: "{{marketplace_context_id}}"
-    executor_public_key: "{{marketplace_member_key}}"
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_key}}"
     method: get_pending_seller_requests
     outputs:
       pending_sellers: output
@@ -364,22 +251,11 @@ steps:
   - name: Get All Orders
     type: call
     node: calimero-node-1
-    context_id: "{{marketplace_context_id}}"
-    executor_public_key: "{{marketplace_member_key}}"
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_key}}"
     method: get_orders
     outputs:
       all_orders: output
-
-  - name: Get Order 1 Details
-    type: call
-    node: calimero-node-1
-    context_id: "{{marketplace_context_id}}"
-    executor_public_key: "{{marketplace_member_key}}"
-    method: get_order
-    args:
-      order_id: "order_1"
-    outputs:
-      order1_details: output
 
 # Configuration
 stop_all_nodes: false
