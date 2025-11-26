@@ -73,7 +73,7 @@ export default function HomePage() {
         }
       } catch (error) {
         console.error('Failed to create API client:', error);
-        window.alert('Failed to initialize API client');
+        show({ title: 'Failed to initialize API client', variant: 'error' });
       }
     };
 
@@ -92,11 +92,12 @@ export default function HomePage() {
       setEntries(entriesArray);
     } catch (error) {
       console.error('getEntries error:', error);
-      window.alert(
-        error instanceof Error
+      show({
+        title: error instanceof Error
           ? error.message
           : translations.home.errors.loadFailed,
-      );
+        variant: 'error',
+      });
     } finally {
       loadingEntriesRef.current = false;
     }

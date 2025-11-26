@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCalimero } from '@calimero-network/calimero-client';
+import { useToast } from '@calimero-network/mero-ui';
 import { useAuth } from '../../contexts/AuthContext';
 import { AbiClient } from '../../api/AbiClient';
 
@@ -23,6 +24,7 @@ interface MarketplaceInfo {
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { app } = useCalimero();
+  const { show } = useToast();
   const { user, logout } = useAuth();
   const [pendingRequests, setPendingRequests] = useState<SellerRequest[]>([]);
   const [marketplaceInfo, setMarketplaceInfo] = useState<MarketplaceInfo | null>(null);
@@ -115,12 +117,12 @@ export default function AdminDashboard() {
         throw new Error(data.error.type || JSON.stringify(data.error));
       }
 
-      alert('Seller approved successfully!');
+      show({ title: 'Seller approved successfully!', variant: 'success' });
       // Reload data to reflect changes
       await loadData();
     } catch (error: any) {
       console.error('Error approving seller:', error);
-      alert(`Failed to approve seller: ${error.message || 'Unknown error'}`);
+      show({ title: `Failed to approve seller: ${error.message || 'Unknown error'}`, variant: 'error' });
     }
   };
 

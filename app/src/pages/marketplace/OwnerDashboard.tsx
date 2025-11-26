@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCalimero } from '@calimero-network/calimero-client';
+import { useToast } from '@calimero-network/mero-ui';
 import { AbiClient } from '../../api/AbiClient';
 
 interface SellerRequest {
@@ -48,6 +49,7 @@ interface Order {
 export default function OwnerDashboard() {
   const navigate = useNavigate();
   const { app } = useCalimero();
+  const { show } = useToast();
   const [pendingSellerRequests, setPendingSellerRequests] = useState<SellerRequest[]>([]);
   const [approvedSellers, setApprovedSellers] = useState<SellerInfo[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -115,14 +117,14 @@ export default function OwnerDashboard() {
   const approveSeller = async (sellerId: string) => {
     try {
       if (!app) {
-        alert('Please connect your wallet first.');
+        show({ title: 'Please connect your wallet first.', variant: 'warning' });
         return;
       }
 
       const contexts = await app.fetchContexts();
       const marketplaceContext = contexts.find(c => c.id === MARKETPLACE_CONTEXT_ID);
       if (!marketplaceContext) {
-        alert('Marketplace context not found. Please ensure the network is bootstrapped correctly.');
+        show({ title: 'Marketplace context not found. Please ensure the network is bootstrapped correctly.', variant: 'error' });
         return;
       }
 
@@ -130,10 +132,10 @@ export default function OwnerDashboard() {
       await api.ownerApproveSeller({ seller_id: sellerId });
 
       await loadData();
-      alert('Seller approved successfully!');
+      show({ title: 'Seller approved successfully!', variant: 'success' });
     } catch (error) {
       console.error('Error approving seller:', error);
-      alert('Error approving seller. See console for details.');
+      show({ title: 'Error approving seller. See console for details.', variant: 'error' });
     }
   };
 

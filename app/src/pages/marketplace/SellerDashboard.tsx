@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCalimero } from '@calimero-network/calimero-client';
+import { useToast } from '@calimero-network/mero-ui';
 import { useAuth } from '../../contexts/AuthContext';
 import { AbiClient } from '../../api/AbiClient';
 
@@ -20,6 +21,7 @@ interface Product {
 export default function SellerDashboard() {
   const navigate = useNavigate();
   const { app } = useCalimero();
+  const { show } = useToast();
   const { user, logout } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -117,7 +119,7 @@ export default function SellerDashboard() {
 
       // Reload products after successful save
       await loadProducts();
-      alert('Product added successfully!');
+      show({ title: 'Product added successfully!', variant: 'success' });
 
       setShowAddProduct(false);
       setFormData({
@@ -135,9 +137,9 @@ export default function SellerDashboard() {
       const errorMessage = error?.message || error?.toString() || 'Unknown error';
 
       if (errorMessage.includes('Seller not found')) {
-        alert('Cannot add product: Your seller account is not approved yet. Please wait for admin approval.');
+        show({ title: 'Cannot add product: Your seller account is not approved yet. Please wait for admin approval.', variant: 'warning' });
       } else {
-        alert(`Error adding product: ${errorMessage}`);
+        show({ title: `Error adding product: ${errorMessage}`, variant: 'error' });
       }
     }
   };

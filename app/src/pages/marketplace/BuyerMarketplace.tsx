@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCalimero } from '@calimero-network/calimero-client';
+import { useToast } from '@calimero-network/mero-ui';
 import { AbiClient } from '../../api/AbiClient';
 
 interface Product {
@@ -31,6 +32,7 @@ interface Order {
 export default function BuyerMarketplace() {
   const navigate = useNavigate();
   const { app } = useCalimero();
+  const { show } = useToast();
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -106,14 +108,14 @@ export default function BuyerMarketplace() {
   const purchaseProduct = async (productId: string, price: string) => {
     try {
       if (!app) {
-        alert('Please connect your wallet first.');
+        show({ title: 'Please connect your wallet first.', variant: 'warning' });
         return;
       }
 
       const contexts = await app.fetchContexts();
       const marketplaceContext = contexts.find(c => c.id === MARKETPLACE_CONTEXT_ID);
       if (!marketplaceContext) {
-        alert('Marketplace context not found. Please ensure the network is bootstrapped correctly.');
+        show({ title: 'Marketplace context not found. Please ensure the network is bootstrapped correctly.', variant: 'error' });
         return;
       }
 
@@ -126,25 +128,25 @@ export default function BuyerMarketplace() {
         _signature: `0xSig_purchase_${Date.now()}`,
       });
 
-      alert(`Purchase successful! Order ID: ${orderId}\nEscrow created for $${price}`);
+      show({ title: `Purchase successful! Order ID: ${orderId}. Escrow created for $${price}`, variant: 'success' });
       await loadData();
     } catch (error) {
       console.error('Error purchasing product:', error);
-      alert('Error purchasing product. See console for details.');
+      show({ title: 'Error purchasing product. See console for details.', variant: 'error' });
     }
   };
 
   const confirmDelivery = async (orderId: string) => {
     try {
       if (!app) {
-        alert('Please connect your wallet first.');
+        show({ title: 'Please connect your wallet first.', variant: 'warning' });
         return;
       }
 
       const contexts = await app.fetchContexts();
       const marketplaceContext = contexts.find(c => c.id === MARKETPLACE_CONTEXT_ID);
       if (!marketplaceContext) {
-        alert('Marketplace context not found. Please ensure the network is bootstrapped correctly.');
+        show({ title: 'Marketplace context not found. Please ensure the network is bootstrapped correctly.', variant: 'error' });
         return;
       }
 
@@ -155,12 +157,12 @@ export default function BuyerMarketplace() {
         _buyer_signature: `0xSig_delivery_${Date.now()}`,
       });
 
-      alert('Delivery confirmed! Escrow has been released to the seller.');
+      show({ title: 'Delivery confirmed! Escrow has been released to the seller.', variant: 'success' });
       await loadData();
       setSelectedOrder(null);
     } catch (error) {
       console.error('Error confirming delivery:', error);
-      alert('Error confirming delivery. See console for details.');
+      show({ title: 'Error confirming delivery. See console for details.', variant: 'error' });
     }
   };
 
