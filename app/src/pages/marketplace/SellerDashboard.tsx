@@ -38,7 +38,7 @@ export default function SellerDashboard() {
   });
 
   // Updated with bootstrap output: context_id
-  const MARKETPLACE_CONTEXT_ID = 'FrHTTbHBVi4zsu7grrjiTGnVH67aYmxyp2kbhybLcBtb';
+  const MARKETPLACE_CONTEXT_ID = '4RWh1d8R7ksxZCACdkQ1qT457tPHaYgw1zsmRSuy7LPX';
 
   useEffect(() => {
     // Load products on mount (no auth required for demo)
@@ -61,7 +61,7 @@ export default function SellerDashboard() {
             contextId: MARKETPLACE_CONTEXT_ID,
             method: 'get_products',
             argsJson: {},
-            executorPublicKey: 'J4r3jAQRPm8xc4TAV4hDVCd1UAvDekGMa9MKrcUg8KDs'
+            executorPublicKey: '33fir1baFPv6Z3vXZAZDSKZYLt9SRQaU6KXwPQPEZMMf'
           }
         })
       });
@@ -83,34 +83,41 @@ export default function SellerDashboard() {
     e.preventDefault();
 
     try {
-      // If app is available, try real API call first
-      if (app) {
-        const contexts = await app.fetchContexts();
-        const marketplaceContext = contexts.find(c => c.id === MARKETPLACE_CONTEXT_ID);
-        if (marketplaceContext) {
-          const api = new AbiClient(app, marketplaceContext);
+      // Use direct JSON-RPC call for demo
+      const response = await fetch('http://localhost:2528/jsonrpc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: '1',
+          method: 'execute',
+          params: {
+            contextId: MARKETPLACE_CONTEXT_ID,
+            method: 'add_product',
+            argsJson: {
+              seller_wallet: formData.sellerWallet,
+              name: formData.name,
+              description: formData.description,
+              quantity: formData.quantity,
+              price: formData.price,
+              image_url: formData.imageUrl,
+              category: formData.category,
+              shipping_info: formData.shippingInfo,
+              _signature: `0xSig_${Date.now()}`,
+            },
+            executorPublicKey: '33fir1baFPv6Z3vXZAZDSKZYLt9SRQaU6KXwPQPEZMMf'
+          }
+        })
+      });
 
-          await api.addProduct({
-            seller_wallet: formData.sellerWallet,
-            name: formData.name,
-            description: formData.description,
-            quantity: formData.quantity,
-            price: formData.price,
-            image_url: formData.imageUrl,
-            category: formData.category,
-            shipping_info: formData.shippingInfo,
-            _signature: `0xSig_${Date.now()}`,
-          });
-
-          // Only reload products after successful save to backend
-          await loadProducts();
-          alert('Product added successfully!');
-        } else {
-          throw new Error('Marketplace context not found');
-        }
-      } else {
-        throw new Error('Calimero app not initialized. Cannot add product.');
+      const data = await response.json();
+      if (data.error) {
+        throw new Error(data.error.type || JSON.stringify(data.error));
       }
+
+      // Reload products after successful save
+      await loadProducts();
+      alert('Product added successfully!');
 
       setShowAddProduct(false);
       setFormData({

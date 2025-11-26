@@ -38,7 +38,7 @@ export default function BuyerMarketplace() {
   const [buyerWallet] = useState('0xBuyerWallet001');
 
   // Updated with bootstrap output: context_id
-  const MARKETPLACE_CONTEXT_ID = 'FrHTTbHBVi4zsu7grrjiTGnVH67aYmxyp2kbhybLcBtb';
+  const MARKETPLACE_CONTEXT_ID = '4RWh1d8R7ksxZCACdkQ1qT457tPHaYgw1zsmRSuy7LPX';
 
   useEffect(() => {
     // Load data regardless of auth state for demo purposes
@@ -61,7 +61,7 @@ export default function BuyerMarketplace() {
             contextId: MARKETPLACE_CONTEXT_ID,
             method: 'get_products',
             argsJson: {},
-            executorPublicKey: 'J4r3jAQRPm8xc4TAV4hDVCd1UAvDekGMa9MKrcUg8KDs'
+            executorPublicKey: '33fir1baFPv6Z3vXZAZDSKZYLt9SRQaU6KXwPQPEZMMf'
           }
         })
       });
@@ -84,7 +84,7 @@ export default function BuyerMarketplace() {
             contextId: MARKETPLACE_CONTEXT_ID,
             method: 'get_orders',
             argsJson: {},
-            executorPublicKey: 'J4r3jAQRPm8xc4TAV4hDVCd1UAvDekGMa9MKrcUg8KDs'
+            executorPublicKey: '33fir1baFPv6Z3vXZAZDSKZYLt9SRQaU6KXwPQPEZMMf'
           }
         })
       });

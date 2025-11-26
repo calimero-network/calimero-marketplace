@@ -29,64 +29,60 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   // Updated with bootstrap output: context_id
-  const MARKETPLACE_CONTEXT_ID = 'FrHTTbHBVi4zsu7grrjiTGnVH67aYmxyp2kbhybLcBtb';
+  const MARKETPLACE_CONTEXT_ID = '4RWh1d8R7ksxZCACdkQ1qT457tPHaYgw1zsmRSuy7LPX';
 
   useEffect(() => {
-    // Initialize with mock data for demo
-    setMarketplaceInfo({
-      admin_wallet: '0xAdminWallet123456789',
-      store_name: 'TechGadgets Electronics Marketplace',
-      type_of_goods: 'Electronics & Accessories'
-    });
-
-    // Add mock pending seller
-    setPendingRequests([{
-      id: 'seller_req_002',
-      wallet_address: '0xSellerWallet002',
-      company_name: 'SmartHome Solutions',
-      company_details: 'Leading provider of smart home automation and IoT devices',
-      signature: '0xSig_pending',
-      timestamp: Date.now() * 1000000,
-      approved: false
-    }]);
-
-    setLoading(false);
-
-    // Try to load real data if app is available
-    if (app) {
-      loadData();
-    }
-  }, [app]);
+    // Load real data from backend
+    loadData();
+  }, []);
 
   const loadData = async () => {
     try {
       setLoading(true);
 
-      if (!app) {
-        console.error('CalimeroApp not initialized');
-        return;
+      // Fetch marketplace info via direct JSON-RPC
+      const infoResponse = await fetch('http://localhost:2528/jsonrpc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: '1',
+          method: 'execute',
+          params: {
+            contextId: MARKETPLACE_CONTEXT_ID,
+            method: 'get_marketplace_info',
+            argsJson: {},
+            executorPublicKey: '33fir1baFPv6Z3vXZAZDSKZYLt9SRQaU6KXwPQPEZMMf'
+          }
+        })
+      });
+
+      const infoData = await infoResponse.json();
+      if (infoData.result?.output) {
+        setMarketplaceInfo(JSON.parse(infoData.result.output));
       }
 
-      // Get contexts and create API client for Marketplace
-      const contexts = await app.fetchContexts();
-      const marketplaceContext = contexts.find(c => c.id === MARKETPLACE_CONTEXT_ID);
+      // Fetch pending seller requests via direct JSON-RPC
+      const requestsResponse = await fetch('http://localhost:2528/jsonrpc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: '2',
+          method: 'execute',
+          params: {
+            contextId: MARKETPLACE_CONTEXT_ID,
+            method: 'get_pending_seller_requests',
+            argsJson: {},
+            executorPublicKey: '33fir1baFPv6Z3vXZAZDSKZYLt9SRQaU6KXwPQPEZMMf'
+          }
+        })
+      });
 
-      if (!marketplaceContext) {
-        console.error('Marketplace context not found');
-        return;
+      const requestsData = await requestsResponse.json();
+      if (requestsData.result?.output) {
+        setPendingRequests(JSON.parse(requestsData.result.output));
       }
-
-      const api = new AbiClient(app, marketplaceContext);
-
-      // Fetch marketplace info
-      const infoJson = await api.getMarketplaceInfo();
-      const info = JSON.parse(infoJson);
-      setMarketplaceInfo(info);
-
-      // Fetch pending seller requests
-      const requestsJson = await api.getPendingSellerRequests();
-      const requests = JSON.parse(requestsJson);
-      setPendingRequests(requests);
 
     } catch (error) {
       console.error('Error loading data:', error);
@@ -97,25 +93,31 @@ export default function AdminDashboard() {
 
   const approveSeller = async (sellerId: string) => {
     try {
-      // Mock approval - remove from pending list
-      setPendingRequests(prev => prev.filter(req => req.id !== sellerId));
-      alert('Seller approved successfully! (Mock mode)');
-
-      // Try real API if available
-      if (app) {
-        try {
-          const contexts = await app.fetchContexts();
-          const marketplaceContext = contexts.find(c => c.id === MARKETPLACE_CONTEXT_ID);
-
-          if (marketplaceContext) {
-            const api = new AbiClient(app, marketplaceContext);
-            await api.adminApproveSeller({ seller_id: sellerId });
-            await loadData();
+      // Call admin_approve_seller via direct JSON-RPC
+      const response = await fetch('http://localhost:2528/jsonrpc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: '1',
+          method: 'execute',
+          params: {
+            contextId: MARKETPLACE_CONTEXT_ID,
+            method: 'admin_approve_seller',
+            argsJson: { seller_id: sellerId },
+            executorPublicKey: '33fir1baFPv6Z3vXZAZDSKZYLt9SRQaU6KXwPQPEZMMf'
           }
-        } catch (apiError) {
-          console.log('Real API call failed, using mock approval:', apiError);
-        }
+        })
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        throw new Error(data.error.type || JSON.stringify(data.error));
       }
+
+      alert('Seller approved successfully!');
+      // Reload data to reflect changes
+      await loadData();
     } catch (error: any) {
       console.error('Error approving seller:', error);
       alert(`Failed to approve seller: ${error.message || 'Unknown error'}`);
