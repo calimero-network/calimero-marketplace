@@ -2,9 +2,6 @@
 
 use std::collections::BTreeMap;
 
-// Include the generated ABI code
-include!(env!("GENERATED_ABI_PATH"));
-
 use calimero_sdk::app;
 use calimero_sdk::borsh::{BorshDeserialize, BorshSerialize};
 use calimero_sdk::serde::{Deserialize, Serialize};
@@ -125,7 +122,10 @@ impl Mergeable for Order {
         // For delivered_at, prefer the one with a value if timestamps are equal
         if other.created_at > self.created_at {
             *self = other.clone();
-        } else if other.created_at == self.created_at && other.delivered_at.is_some() && self.delivered_at.is_none() {
+        } else if other.created_at == self.created_at
+            && other.delivered_at.is_some()
+            && self.delivered_at.is_none()
+        {
             *self = other.clone();
         }
         Ok(())
@@ -161,12 +161,28 @@ pub struct MarketplaceApp {
 
 #[app::event]
 pub enum MarketplaceAppEvent<'a> {
-    MarketplaceInitialized { admin_wallet: &'a str, store_name: &'a str },
-    SellerRequested { seller_id: &'a str, wallet: &'a str },
-    SellerApproved { seller_id: &'a str },
-    ProductAdded { product_id: &'a str, seller_id: &'a str },
-    OrderCreated { order_id: &'a str, buyer_wallet: &'a str },
-    DeliveryConfirmed { order_id: &'a str },
+    MarketplaceInitialized {
+        admin_wallet: &'a str,
+        store_name: &'a str,
+    },
+    SellerRequested {
+        seller_id: &'a str,
+        wallet: &'a str,
+    },
+    SellerApproved {
+        seller_id: &'a str,
+    },
+    ProductAdded {
+        product_id: &'a str,
+        seller_id: &'a str,
+    },
+    OrderCreated {
+        order_id: &'a str,
+        buyer_wallet: &'a str,
+    },
+    DeliveryConfirmed {
+        order_id: &'a str,
+    },
 }
 
 #[derive(Debug, Error, Serialize)]
@@ -218,7 +234,11 @@ impl MarketplaceApp {
         store_name: String,
         type_of_goods: String,
     ) -> app::Result<String> {
-        app::log!("Setting up marketplace: {} for admin: {}", store_name, admin_wallet);
+        app::log!(
+            "Setting up marketplace: {} for admin: {}",
+            store_name,
+            admin_wallet
+        );
 
         self.admin_wallet = admin_wallet.clone();
         self.store_name = store_name.clone();
@@ -229,7 +249,10 @@ impl MarketplaceApp {
             store_name: &self.store_name,
         });
 
-        Ok(format!("Marketplace '{}' initialized successfully", store_name))
+        Ok(format!(
+            "Marketplace '{}' initialized successfully",
+            store_name
+        ))
     }
 
     /// Get marketplace information
@@ -285,11 +308,14 @@ impl MarketplaceApp {
 
         // TODO: Verify caller is admin
 
-        let mut request = self.seller_requests.get(&seller_id)?
+        let mut request = self
+            .seller_requests
+            .get(&seller_id)?
             .expect("Seller request not found");
 
         request.approved = true;
-        self.seller_requests.insert(seller_id.clone(), request.clone())?;
+        self.seller_requests
+            .insert(seller_id.clone(), request.clone())?;
 
         let seller_info = SellerInfo {
             id: seller_id.clone(),
@@ -301,7 +327,9 @@ impl MarketplaceApp {
 
         self.sellers.insert(seller_id.clone(), seller_info)?;
 
-        app::emit!(MarketplaceAppEvent::SellerApproved { seller_id: &seller_id });
+        app::emit!(MarketplaceAppEvent::SellerApproved {
+            seller_id: &seller_id
+        });
 
         Ok(())
     }
@@ -365,12 +393,15 @@ impl MarketplaceApp {
         amount: String,
         _signature: String,
     ) -> app::Result<String> {
-        app::log!("Purchase request for product: {} by buyer: {}", product_id, buyer_wallet);
+        app::log!(
+            "Purchase request for product: {} by buyer: {}",
+            product_id,
+            buyer_wallet
+        );
 
         // TODO: Verify signature
 
-        let mut product = self.products.get(&product_id)?
-            .expect("Product not found");
+        let mut product = self.products.get(&product_id)?.expect("Product not found");
 
         if product.quantity == 0 {
             app::bail!("Insufficient quantity");
@@ -410,26 +441,30 @@ impl MarketplaceApp {
     pub fn get_delivery_payload(&self, order_id: String) -> app::Result<String> {
         app::log!("Getting delivery payload for order: {}", order_id);
 
-        let order = self.orders.get(&order_id)?
-            .expect("Order not found");
+        let order = self.orders.get(&order_id)?.expect("Order not found");
 
         Ok(order.qr_payload)
     }
 
-    pub fn confirm_delivery(&mut self, order_id: String, _buyer_signature: String) -> app::Result<()> {
+    pub fn confirm_delivery(
+        &mut self,
+        order_id: String,
+        _buyer_signature: String,
+    ) -> app::Result<()> {
         app::log!("Confirming delivery for order: {}", order_id);
 
         // TODO: Verify buyer signature matches the order buyer
 
-        let mut order = self.orders.get(&order_id)?
-            .expect("Order not found");
+        let mut order = self.orders.get(&order_id)?.expect("Order not found");
 
         order.escrow_status = EscrowStatus::Released;
         order.delivered_at = Some(env::time_now());
 
         self.orders.insert(order_id.clone(), order)?;
 
-        app::emit!(MarketplaceAppEvent::DeliveryConfirmed { order_id: &order_id });
+        app::emit!(MarketplaceAppEvent::DeliveryConfirmed {
+            order_id: &order_id
+        });
 
         Ok(())
     }
@@ -441,44 +476,38 @@ impl MarketplaceApp {
     pub fn get_products(&self) -> app::Result<String> {
         app::log!("Getting all products");
         let products: BTreeMap<String, Product> = self.products.entries()?.collect();
-        let json = calimero_sdk::serde_json::to_string(&products)
-            .expect("Failed to serialize JSON");
+        let json =
+            calimero_sdk::serde_json::to_string(&products).expect("Failed to serialize JSON");
         Ok(json)
     }
 
     pub fn get_sellers(&self) -> app::Result<String> {
         app::log!("Getting all sellers");
         let sellers: BTreeMap<String, SellerInfo> = self.sellers.entries()?.collect();
-        let json = calimero_sdk::serde_json::to_string(&sellers)
-            .expect("Failed to serialize JSON");
+        let json = calimero_sdk::serde_json::to_string(&sellers).expect("Failed to serialize JSON");
         Ok(json)
     }
 
     pub fn get_pending_seller_requests(&self) -> app::Result<String> {
         app::log!("Getting pending seller requests");
-        let all_requests: BTreeMap<String, SellerRequest> = self.seller_requests.entries()?.collect();
-        let pending: Vec<&SellerRequest> = all_requests.values()
-            .filter(|r| !r.approved)
-            .collect();
-        let json = calimero_sdk::serde_json::to_string(&pending)
-            .expect("Failed to serialize JSON");
+        let all_requests: BTreeMap<String, SellerRequest> =
+            self.seller_requests.entries()?.collect();
+        let pending: Vec<&SellerRequest> = all_requests.values().filter(|r| !r.approved).collect();
+        let json = calimero_sdk::serde_json::to_string(&pending).expect("Failed to serialize JSON");
         Ok(json)
     }
 
     pub fn get_orders(&self) -> app::Result<String> {
         app::log!("Getting all orders");
         let orders: BTreeMap<String, Order> = self.orders.entries()?.collect();
-        let json = calimero_sdk::serde_json::to_string(&orders)
-            .expect("Failed to serialize JSON");
+        let json = calimero_sdk::serde_json::to_string(&orders).expect("Failed to serialize JSON");
         Ok(json)
     }
 
     pub fn get_order(&self, order_id: String) -> app::Result<String> {
         app::log!("Getting order: {}", order_id);
-        let order = self.orders.get(&order_id)?
-            .expect("Order not found");
-        let json = calimero_sdk::serde_json::to_string(&order)
-            .expect("Failed to serialize JSON");
+        let order = self.orders.get(&order_id)?.expect("Order not found");
+        let json = calimero_sdk::serde_json::to_string(&order).expect("Failed to serialize JSON");
         Ok(json)
     }
 
