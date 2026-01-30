@@ -27,7 +27,8 @@ export default function AdminDashboard() {
   const { show } = useToast();
   const { user, logout } = useAuth();
   const [pendingRequests, setPendingRequests] = useState<SellerRequest[]>([]);
-  const [marketplaceInfo, setMarketplaceInfo] = useState<MarketplaceInfo | null>(null);
+  const [marketplaceInfo, setMarketplaceInfo] =
+    useState<MarketplaceInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Updated with bootstrap output: context_id
@@ -54,9 +55,9 @@ export default function AdminDashboard() {
             contextId: MARKETPLACE_CONTEXT_ID,
             method: 'get_marketplace_info',
             argsJson: {},
-            executorPublicKey: '33fir1baFPv6Z3vXZAZDSKZYLt9SRQaU6KXwPQPEZMMf'
-          }
-        })
+            executorPublicKey: '33fir1baFPv6Z3vXZAZDSKZYLt9SRQaU6KXwPQPEZMMf',
+          },
+        }),
       });
 
       const infoData = await infoResponse.json();
@@ -76,16 +77,15 @@ export default function AdminDashboard() {
             contextId: MARKETPLACE_CONTEXT_ID,
             method: 'get_pending_seller_requests',
             argsJson: {},
-            executorPublicKey: '33fir1baFPv6Z3vXZAZDSKZYLt9SRQaU6KXwPQPEZMMf'
-          }
-        })
+            executorPublicKey: '33fir1baFPv6Z3vXZAZDSKZYLt9SRQaU6KXwPQPEZMMf',
+          },
+        }),
       });
 
       const requestsData = await requestsResponse.json();
       if (requestsData.result?.output) {
         setPendingRequests(JSON.parse(requestsData.result.output));
       }
-
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -107,9 +107,9 @@ export default function AdminDashboard() {
             contextId: MARKETPLACE_CONTEXT_ID,
             method: 'admin_approve_seller',
             argsJson: { seller_id: sellerId },
-            executorPublicKey: '33fir1baFPv6Z3vXZAZDSKZYLt9SRQaU6KXwPQPEZMMf'
-          }
-        })
+            executorPublicKey: '33fir1baFPv6Z3vXZAZDSKZYLt9SRQaU6KXwPQPEZMMf',
+          },
+        }),
       });
 
       const data = await response.json();
@@ -122,7 +122,10 @@ export default function AdminDashboard() {
       await loadData();
     } catch (error: any) {
       console.error('Error approving seller:', error);
-      show({ title: `Failed to approve seller: ${error.message || 'Unknown error'}`, variant: 'error' });
+      show({
+        title: `Failed to approve seller: ${error.message || 'Unknown error'}`,
+        variant: 'error',
+      });
     }
   };
 
@@ -135,49 +138,116 @@ export default function AdminDashboard() {
     );
   }
 
-
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif', maxWidth: '1200px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+    <div
+      style={{
+        padding: '20px',
+        fontFamily: 'Arial, sans-serif',
+        maxWidth: '1200px',
+        margin: '0 auto',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '30px',
+        }}
+      >
         <div>
           <h1 style={{ margin: 0 }}>Admin Dashboard</h1>
-          {user && <p style={{ color: '#666', fontSize: '14px', marginTop: '8px' }}>Logged in as: {user.username}</p>}
+          {user && (
+            <p style={{ color: '#666', fontSize: '14px', marginTop: '8px' }}>
+              Logged in as: {user.username}
+            </p>
+          )}
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={() => navigate('/')} style={buttonStyle}>Home</button>
-          <button onClick={() => navigate('/store')} style={buttonStyle}>View Store</button>
-          <button onClick={() => navigate('/seller')} style={buttonStyle}>Seller View</button>
-          <button onClick={() => { logout(); navigate('/login'); }} style={{...buttonStyle, backgroundColor: '#ef4444'}}>Logout</button>
+          <button onClick={() => navigate('/')} style={buttonStyle}>
+            Home
+          </button>
+          <button onClick={() => navigate('/store')} style={buttonStyle}>
+            View Store
+          </button>
+          <button onClick={() => navigate('/seller')} style={buttonStyle}>
+            Seller View
+          </button>
+          <button
+            onClick={() => {
+              logout();
+              navigate('/login');
+            }}
+            style={{ ...buttonStyle, backgroundColor: '#ef4444' }}
+          >
+            Logout
+          </button>
         </div>
       </div>
 
       {/* Marketplace Info */}
       {marketplaceInfo && (
-        <div style={{ ...cardStyle, backgroundColor: '#e3f2fd', marginBottom: '30px' }}>
+        <div
+          style={{
+            ...cardStyle,
+            backgroundColor: '#e3f2fd',
+            marginBottom: '30px',
+          }}
+        >
           <h2 style={{ marginTop: 0 }}>Marketplace Information</h2>
-          <p><strong>Store Name:</strong> {marketplaceInfo.store_name}</p>
-          <p><strong>Type of Goods:</strong> {marketplaceInfo.type_of_goods}</p>
-          <p><strong>Admin Wallet:</strong> <code>{marketplaceInfo.admin_wallet}</code></p>
+          <p>
+            <strong>Store Name:</strong> {marketplaceInfo.store_name}
+          </p>
+          <p>
+            <strong>Type of Goods:</strong> {marketplaceInfo.type_of_goods}
+          </p>
+          <p>
+            <strong>Admin Wallet:</strong>{' '}
+            <code>{marketplaceInfo.admin_wallet}</code>
+          </p>
         </div>
       )}
 
       {/* Pending Seller Requests */}
       <div style={cardStyle}>
-        <h2 style={{ marginTop: 0 }}>Pending Seller Requests ({pendingRequests.length})</h2>
+        <h2 style={{ marginTop: 0 }}>
+          Pending Seller Requests ({pendingRequests.length})
+        </h2>
 
         {pendingRequests.length === 0 ? (
           <p style={{ color: '#666' }}>No pending seller requests.</p>
         ) : (
           <div style={{ display: 'grid', gap: '15px' }}>
             {pendingRequests.map((request) => (
-              <div key={request.id} style={{ ...cardStyle, backgroundColor: '#fff3e0', border: '1px solid #ffb74d' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+              <div
+                key={request.id}
+                style={{
+                  ...cardStyle,
+                  backgroundColor: '#fff3e0',
+                  border: '1px solid #ffb74d',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'start',
+                  }}
+                >
                   <div style={{ flex: 1 }}>
-                    <h3 style={{ margin: '0 0 10px 0', color: '#e65100' }}>{request.company_name}</h3>
-                    <p><strong>Wallet:</strong> <code>{request.wallet_address}</code></p>
-                    <p><strong>Details:</strong> {request.company_details}</p>
+                    <h3 style={{ margin: '0 0 10px 0', color: '#e65100' }}>
+                      {request.company_name}
+                    </h3>
+                    <p>
+                      <strong>Wallet:</strong>{' '}
+                      <code>{request.wallet_address}</code>
+                    </p>
+                    <p>
+                      <strong>Details:</strong> {request.company_details}
+                    </p>
                     <p style={{ fontSize: '0.9em', color: '#666' }}>
-                      <strong>Requested:</strong> {new Date(request.timestamp / 1000000).toLocaleString()}
+                      <strong>Requested:</strong>{' '}
+                      {new Date(request.timestamp / 1000000).toLocaleString()}
                     </p>
                   </div>
                   <button

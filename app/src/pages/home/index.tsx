@@ -93,9 +93,10 @@ export default function HomePage() {
     } catch (error) {
       console.error('getEntries error:', error);
       show({
-        title: error instanceof Error
-          ? error.message
-          : translations.home.errors.loadFailed,
+        title:
+          error instanceof Error
+            ? error.message
+            : translations.home.errors.loadFailed,
         variant: 'error',
       });
     } finally {

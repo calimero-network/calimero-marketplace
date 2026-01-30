@@ -234,7 +234,7 @@ pnpm app:dev
 - **Calimero Docs:** https://docs.calimero.network
 - **App Prompt:** [app-prompt.md](app-prompt.md)
 - **Core Repo:** https://github.com/calimero-network/core
-- **Bootstrap Tool:** `@calimero-network/merobox-js`
+- **Bootstrap Tool:** [merobox](https://pypi.org/project/merobox/)
 
 ## Summary
 

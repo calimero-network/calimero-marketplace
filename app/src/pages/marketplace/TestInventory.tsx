@@ -25,9 +25,9 @@ export default function TestInventory() {
             contextId: 'A2gohzYWwdgguTs4frBMpctuMTY7gwTDFG5BtZ1UN28L',
             method: 'get_products',
             argsJson: {},
-            executorPublicKey: 'J4r3jAQRPm8xc4TAV4hDVCd1UAvDekGMa9MKrcUg8KDs'
-          }
-        })
+            executorPublicKey: 'J4r3jAQRPm8xc4TAV4hDVCd1UAvDekGMa9MKrcUg8KDs',
+          },
+        }),
       });
 
       const data = await response.json();
@@ -51,12 +51,14 @@ export default function TestInventory() {
     <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
       <h1>🔍 Inventory Test Page</h1>
 
-      <div style={{
-        padding: '20px',
-        backgroundColor: error ? '#fee' : '#efe',
-        borderRadius: '8px',
-        marginBottom: '20px'
-      }}>
+      <div
+        style={{
+          padding: '20px',
+          backgroundColor: error ? '#fee' : '#efe',
+          borderRadius: '8px',
+          marginBottom: '20px',
+        }}
+      >
         <h2>Status: {status}</h2>
         {error && <p style={{ color: 'red' }}>{error}</p>}
       </div>
@@ -73,19 +75,34 @@ export default function TestInventory() {
       {products.length > 0 && (
         <div>
           <h2>Products Found:</h2>
-          <div style={{ display: 'grid', gap: '20px', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
+          <div
+            style={{
+              display: 'grid',
+              gap: '20px',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+            }}
+          >
             {products.map((product: any) => (
-              <div key={product.id} style={{
-                border: '1px solid #ddd',
-                borderRadius: '8px',
-                padding: '16px',
-                backgroundColor: '#fff'
-              }}>
+              <div
+                key={product.id}
+                style={{
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
+                  padding: '16px',
+                  backgroundColor: '#fff',
+                }}
+              >
                 <h3>{product.name}</h3>
                 <p>{product.description}</p>
-                <p><strong>Price:</strong> ${product.price}</p>
-                <p><strong>Quantity:</strong> {product.quantity}</p>
-                <p><strong>Category:</strong> {product.category}</p>
+                <p>
+                  <strong>Price:</strong> ${product.price}
+                </p>
+                <p>
+                  <strong>Quantity:</strong> {product.quantity}
+                </p>
+                <p>
+                  <strong>Category:</strong> {product.category}
+                </p>
               </div>
             ))}
           </div>

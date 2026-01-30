@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
 
 interface AuthUser {
   username: string;
@@ -40,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const authData: AuthUser = {
       username,
       authenticated: true,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
     setUser(authData);
     localStorage.setItem('marketplace_auth', JSON.stringify(authData));
@@ -52,12 +58,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      isAuthenticated: !!user,
-      login,
-      logout
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

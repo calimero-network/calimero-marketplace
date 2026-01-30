@@ -40,7 +40,6 @@ but here is a simple overview of how things work.
 - `pnpm logic:build`: builds WASM + ABI  
 - `pnpm app:generate-client`: generates typed client from ABI  
 - `pnpm app:dev`: runs frontend dev server  
-- `pnpm network:bootstrap`: boots Merobox workflow  
 
 > 💡 When you run `pnpm logic:build`, the app automatically generates the client.  
 > If you change the logic `package_name`, update the `applicationId` after running the Merobox workflow.
@@ -92,7 +91,7 @@ Update workflow to install the built WASM and create a context:
 
 Run:
 ```bash
-pnpm network:bootstrap
+merobox bootstrap run workflow-example.yml
 ```
 
 Grab the captured `applicationId` and update:
@@ -179,9 +178,6 @@ pnpm add @calimero-network/mero-ui@latest
 # Build backend + client
 pnpm logic:build
 pnpm app:generate-client
-
-# Run Merobox bootstrap (installs wasm, creates context, pre-fills demo data)
-pnpm network:bootstrap
 
 # Set applicationId in app/src/App.tsx from bootstrap output
 # Then run the frontend

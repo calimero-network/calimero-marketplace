@@ -50,7 +50,9 @@ export default function OwnerDashboard() {
   const navigate = useNavigate();
   const { app } = useCalimero();
   const { show } = useToast();
-  const [pendingSellerRequests, setPendingSellerRequests] = useState<SellerRequest[]>([]);
+  const [pendingSellerRequests, setPendingSellerRequests] = useState<
+    SellerRequest[]
+  >([]);
   const [approvedSellers, setApprovedSellers] = useState<SellerInfo[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -76,7 +78,9 @@ export default function OwnerDashboard() {
       if (!app) return;
 
       const contexts = await app.fetchContexts();
-      const marketplaceContext = contexts.find(c => c.id === MARKETPLACE_CONTEXT_ID);
+      const marketplaceContext = contexts.find(
+        (c) => c.id === MARKETPLACE_CONTEXT_ID,
+      );
       if (!marketplaceContext) return;
 
       const api = new AbiClient(app, marketplaceContext);
@@ -106,7 +110,6 @@ export default function OwnerDashboard() {
       const ordersJson = await api.getOrders();
       const ords = JSON.parse(ordersJson);
       setOrders(Object.values(ords));
-
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -117,14 +120,23 @@ export default function OwnerDashboard() {
   const approveSeller = async (sellerId: string) => {
     try {
       if (!app) {
-        show({ title: 'Please connect your wallet first.', variant: 'warning' });
+        show({
+          title: 'Please connect your wallet first.',
+          variant: 'warning',
+        });
         return;
       }
 
       const contexts = await app.fetchContexts();
-      const marketplaceContext = contexts.find(c => c.id === MARKETPLACE_CONTEXT_ID);
+      const marketplaceContext = contexts.find(
+        (c) => c.id === MARKETPLACE_CONTEXT_ID,
+      );
       if (!marketplaceContext) {
-        show({ title: 'Marketplace context not found. Please ensure the network is bootstrapped correctly.', variant: 'error' });
+        show({
+          title:
+            'Marketplace context not found. Please ensure the network is bootstrapped correctly.',
+          variant: 'error',
+        });
         return;
       }
 
@@ -135,7 +147,10 @@ export default function OwnerDashboard() {
       show({ title: 'Seller approved successfully!', variant: 'success' });
     } catch (error) {
       console.error('Error approving seller:', error);
-      show({ title: 'Error approving seller. See console for details.', variant: 'error' });
+      show({
+        title: 'Error approving seller. See console for details.',
+        variant: 'error',
+      });
     }
   };
 
@@ -147,14 +162,20 @@ export default function OwnerDashboard() {
   };
 
   if (loading) {
-    return <div style={{ padding: '40px', textAlign: 'center' }}><h2>Loading...</h2></div>;
+    return (
+      <div style={{ padding: '40px', textAlign: 'center' }}>
+        <h2>Loading...</h2>
+      </div>
+    );
   }
 
   if (!app) {
     return (
       <div style={{ padding: '40px', textAlign: 'center' }}>
         <h2>🔒 Authentication Required</h2>
-        <p style={{ color: '#666', marginTop: '16px' }}>Please connect your wallet to access the Owner Dashboard.</p>
+        <p style={{ color: '#666', marginTop: '16px' }}>
+          Please connect your wallet to access the Owner Dashboard.
+        </p>
         <button
           onClick={() => navigate('/marketplace')}
           style={{
@@ -176,11 +197,22 @@ export default function OwnerDashboard() {
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '40px',
+        }}
+      >
         <div>
-          <h1 style={{ fontSize: '36px', marginBottom: '8px' }}>🏪 Marketplace Owner Dashboard</h1>
+          <h1 style={{ fontSize: '36px', marginBottom: '8px' }}>
+            🏪 Marketplace Owner Dashboard
+          </h1>
           <p style={{ color: '#666' }}>Marketplace: {marketplaceId}</p>
-          <p style={{ color: '#666', fontSize: '14px' }}>Owner: {ownerWallet}</p>
+          <p style={{ color: '#666', fontSize: '14px' }}>
+            Owner: {ownerWallet}
+          </p>
         </div>
         <button
           onClick={() => navigate('/marketplace')}
@@ -198,16 +230,49 @@ export default function OwnerDashboard() {
       </div>
 
       {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '40px' }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '16px',
+          marginBottom: '40px',
+        }}
+      >
         {[
-          { label: 'Pending Sellers', value: pendingSellerRequests.length, color: '#f59e0b' },
-          { label: 'Approved Sellers', value: approvedSellers.length, color: '#10b981' },
+          {
+            label: 'Pending Sellers',
+            value: pendingSellerRequests.length,
+            color: '#f59e0b',
+          },
+          {
+            label: 'Approved Sellers',
+            value: approvedSellers.length,
+            color: '#10b981',
+          },
           { label: 'Total Products', value: products.length, color: '#3b82f6' },
           { label: 'Total Orders', value: orders.length, color: '#8b5cf6' },
         ].map((stat) => (
-          <div key={stat.label} style={{ padding: '20px', backgroundColor: '#f9fafb', borderRadius: '8px', textAlign: 'center' }}>
-            <div style={{ fontSize: '32px', fontWeight: 'bold', color: stat.color }}>{stat.value}</div>
-            <div style={{ fontSize: '14px', color: '#666', marginTop: '4px' }}>{stat.label}</div>
+          <div
+            key={stat.label}
+            style={{
+              padding: '20px',
+              backgroundColor: '#f9fafb',
+              borderRadius: '8px',
+              textAlign: 'center',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '32px',
+                fontWeight: 'bold',
+                color: stat.color,
+              }}
+            >
+              {stat.value}
+            </div>
+            <div style={{ fontSize: '14px', color: '#666', marginTop: '4px' }}>
+              {stat.label}
+            </div>
           </div>
         ))}
       </div>
@@ -218,19 +283,52 @@ export default function OwnerDashboard() {
           Pending Seller Requests ({pendingSellerRequests.length})
         </h2>
         {pendingSellerRequests.length === 0 ? (
-          <div style={{ padding: '40px', textAlign: 'center', backgroundColor: '#f9fafb', borderRadius: '8px' }}>
+          <div
+            style={{
+              padding: '40px',
+              textAlign: 'center',
+              backgroundColor: '#f9fafb',
+              borderRadius: '8px',
+            }}
+          >
             <p style={{ color: '#666' }}>No pending seller requests</p>
           </div>
         ) : (
           <div style={{ display: 'grid', gap: '16px' }}>
             {pendingSellerRequests.map((request) => (
-              <div key={request.id} style={{ padding: '24px', border: '1px solid #e0e0e0', borderRadius: '8px', backgroundColor: '#fff' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+              <div
+                key={request.id}
+                style={{
+                  padding: '24px',
+                  border: '1px solid #e0e0e0',
+                  borderRadius: '8px',
+                  backgroundColor: '#fff',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'start',
+                  }}
+                >
                   <div style={{ flex: 1 }}>
-                    <h3 style={{ fontSize: '20px', marginBottom: '8px' }}>{request.company_name}</h3>
-                    <p style={{ color: '#666', marginBottom: '8px' }}>{request.company_details}</p>
-                    <p style={{ color: '#666', fontSize: '14px' }}>Wallet: {request.wallet_address}</p>
-                    <p style={{ color: '#999', fontSize: '12px', marginTop: '8px' }}>
+                    <h3 style={{ fontSize: '20px', marginBottom: '8px' }}>
+                      {request.company_name}
+                    </h3>
+                    <p style={{ color: '#666', marginBottom: '8px' }}>
+                      {request.company_details}
+                    </p>
+                    <p style={{ color: '#666', fontSize: '14px' }}>
+                      Wallet: {request.wallet_address}
+                    </p>
+                    <p
+                      style={{
+                        color: '#999',
+                        fontSize: '12px',
+                        marginTop: '8px',
+                      }}
+                    >
                       Submitted: {new Date(request.timestamp).toLocaleString()}
                     </p>
                   </div>
@@ -260,11 +358,29 @@ export default function OwnerDashboard() {
         <h2 style={{ fontSize: '24px', marginBottom: '20px' }}>
           Approved Sellers ({approvedSellers.length})
         </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+            gap: '16px',
+          }}
+        >
           {approvedSellers.map((seller) => (
-            <div key={seller.id} style={{ padding: '20px', border: '1px solid #e0e0e0', borderRadius: '8px', backgroundColor: '#fff' }}>
-              <h3 style={{ fontSize: '18px', marginBottom: '8px' }}>{seller.company_name}</h3>
-              <p style={{ color: '#666', fontSize: '14px', marginBottom: '4px' }}>
+            <div
+              key={seller.id}
+              style={{
+                padding: '20px',
+                border: '1px solid #e0e0e0',
+                borderRadius: '8px',
+                backgroundColor: '#fff',
+              }}
+            >
+              <h3 style={{ fontSize: '18px', marginBottom: '8px' }}>
+                {seller.company_name}
+              </h3>
+              <p
+                style={{ color: '#666', fontSize: '14px', marginBottom: '4px' }}
+              >
                 Wallet: {seller.wallet_address}
               </p>
               <p style={{ color: '#999', fontSize: '12px' }}>
@@ -282,24 +398,51 @@ export default function OwnerDashboard() {
         </h2>
         <div style={{ display: 'grid', gap: '16px' }}>
           {orders.slice(0, 5).map((order) => {
-            const product = products.find(p => p.id === order.product_id);
+            const product = products.find((p) => p.id === order.product_id);
             return (
-              <div key={order.id} style={{ padding: '20px', border: '1px solid #e0e0e0', borderRadius: '8px', backgroundColor: '#fff' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+              <div
+                key={order.id}
+                style={{
+                  padding: '20px',
+                  border: '1px solid #e0e0e0',
+                  borderRadius: '8px',
+                  backgroundColor: '#fff',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'start',
+                  }}
+                >
                   <div>
                     <h3 style={{ fontSize: '18px', marginBottom: '8px' }}>
                       {product?.name || order.product_id}
                     </h3>
-                    <p style={{ color: '#666', fontSize: '14px' }}>Buyer: {order.buyer_wallet}</p>
-                    <p style={{ color: '#666', fontSize: '14px' }}>Amount: ${order.amount}</p>
-                    <p style={{ color: '#999', fontSize: '12px', marginTop: '8px' }}>
+                    <p style={{ color: '#666', fontSize: '14px' }}>
+                      Buyer: {order.buyer_wallet}
+                    </p>
+                    <p style={{ color: '#666', fontSize: '14px' }}>
+                      Amount: ${order.amount}
+                    </p>
+                    <p
+                      style={{
+                        color: '#999',
+                        fontSize: '12px',
+                        marginTop: '8px',
+                      }}
+                    >
                       Ordered: {new Date(order.created_at).toLocaleString()}
                     </p>
                   </div>
                   <div
                     style={{
                       padding: '6px 16px',
-                      backgroundColor: getEscrowStatus(order.escrow_status) === 'Released' ? '#10b981' : '#f59e0b',
+                      backgroundColor:
+                        getEscrowStatus(order.escrow_status) === 'Released'
+                          ? '#10b981'
+                          : '#f59e0b',
                       color: 'white',
                       borderRadius: '20px',
                       fontSize: '14px',
